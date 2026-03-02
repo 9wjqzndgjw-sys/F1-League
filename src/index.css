@@ -1,0 +1,42 @@
+:root {
+  --bg: #0a0a0b;
+  --card: #141416;
+  --border: #1c1c20;
+  --red: #e10600;
+  --teal: #00d2be;
+  --text: #f0f0f0;
+  --text-muted: #666;
+  --font-heading: 'Chakra Petch', system-ui, sans-serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+button, input {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--teal);
+  text-decoration: none;
+}
