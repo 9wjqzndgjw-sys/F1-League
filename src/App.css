@@ -761,3 +761,307 @@
   font-size: 0.875rem;
   color: var(--text-muted);
 }
+
+/* ── Standings View ──────────────────────────────────── */
+.standings-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.standings-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.standings-season {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: 0.02em;
+}
+
+.standings-scored {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Standings Tabs ──────────────────────────────────── */
+.standings-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.standings-tab {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  text-transform: uppercase;
+  margin-bottom: -1px;
+}
+
+.standings-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--red);
+}
+
+.standings-tab:hover:not(.active) {
+  color: var(--text);
+}
+
+/* ── Season Standings List ───────────────────────────── */
+.standings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.standings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.875rem 1rem;
+  transition: border-color 0.15s;
+}
+
+.standings-row.me {
+  border-color: var(--teal);
+}
+
+.rank-badge {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  min-width: 2rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.standings-name {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.me-tag {
+  font-size: 0.65rem;
+  background: rgba(0, 210, 190, 0.15);
+  color: var(--teal);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.standings-pts {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.pts-label {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.standings-money {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #4ade80;
+  white-space: nowrap;
+}
+
+/* ── Rounds Tab ──────────────────────────────────────── */
+.rounds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gp-result-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.gp-result-card.expanded {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.gp-result-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.gp-result-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.gp-result-round {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.gp-result-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+.gp-result-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.winner-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fbbf24;
+}
+
+.winner-pts {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.expand-chevron {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── GP Score Detail Table ───────────────────────────── */
+.gp-scores-table {
+  border-top: 1px solid var(--border);
+  padding: 0.375rem 0;
+}
+
+.gp-score-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 1rem;
+  transition: background 0.1s;
+}
+
+.gp-score-row.me {
+  background: rgba(0, 210, 190, 0.05);
+}
+
+.gp-score-rank {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.gp-score-name {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.gp-score-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+}
+
+.pts-drv { color: var(--red); }
+.pts-con { color: var(--teal); }
+.pts-sep { color: var(--border); }
+
+.gp-score-pts {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  min-width: 2.5rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.gp-score-payout {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #4ade80;
+  min-width: 2rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── No Scores Empty State ───────────────────────────── */
+.no-scores {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40vh;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.no-scores-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.no-scores p {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  margin: 0;
+}
+
+.no-scores span {
+  font-size: 0.8125rem;
+}
