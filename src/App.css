@@ -1409,3 +1409,230 @@
 .result-pts.pts-neg {
   color: #f87171;
 }
+
+/* ── Settings View ───────────────────────────────────── */
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.settings-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 0 0.25rem;
+}
+
+.settings-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.settings-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+}
+
+.settings-info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.commissioner-badge {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(225, 6, 0, 0.15);
+  color: var(--red);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* ── Inline inputs for commissioner ─────────────────── */
+.settings-input.inline {
+  width: 4rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.875rem;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.settings-input.inline:focus {
+  border-color: var(--teal);
+}
+
+.settings-save-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.settings-save-btn {
+  padding: 0.55rem 1.25rem;
+  background: var(--teal);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.settings-save-btn:hover:not(:disabled) {
+  background: #00b8a7;
+}
+
+.settings-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-saved {
+  font-size: 0.8125rem;
+  color: #4ade80;
+}
+
+/* ── Sign Out Button ─────────────────────────────────── */
+.signout-full-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.signout-full-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ── GP Status Manager (Commissioner) ────────────────── */
+.gp-manager-list {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gp-manager-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.gp-manager-row:last-child {
+  border-bottom: none;
+}
+
+.gp-manager-row.scored {
+  opacity: 0.45;
+}
+
+.gp-mgr-info {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.gp-mgr-round {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.gp-mgr-name {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gp-mgr-status {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.gp-mgr-status.upcoming  { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+.gp-mgr-status.drafting  { background: rgba(0,210,190,0.15);   color: var(--teal); }
+.gp-mgr-status.drafted   { background: rgba(251,191,36,0.12);  color: #fbbf24; }
+.gp-mgr-status.scored    { background: rgba(74,222,128,0.12);  color: #4ade80; }
+
+.gp-action-btn {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.gp-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gp-action-btn.upcoming { background: rgba(0,210,190,0.15); color: var(--teal); }
+.gp-action-btn.drafting { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.gp-action-btn.drafted  { background: rgba(74,222,128,0.12); color: #4ade80; }
