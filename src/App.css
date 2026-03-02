@@ -1205,3 +1205,207 @@
   background: rgba(74, 222, 128, 0.12);
   color: #4ade80;
 }
+
+/* ── Results View ────────────────────────────────────── */
+.results-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+/* ── GP Chip Selector ────────────────────────────────── */
+.gp-selector {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.gp-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.gp-chip {
+  flex-shrink: 0;
+  padding: 0.35rem 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.gp-chip.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.gp-chip:hover:not(.active) {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text);
+}
+
+/* ── GP Title ────────────────────────────────────────── */
+.results-gp-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+}
+
+.results-gp-round {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.results-gp-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  letter-spacing: 0.01em;
+}
+
+/* ── Session Tabs ────────────────────────────────────── */
+.results-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.results-tab {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  text-transform: uppercase;
+  margin-bottom: -1px;
+}
+
+.results-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--red);
+}
+
+.results-tab:hover:not(.active) {
+  color: var(--text);
+}
+
+/* ── Results List ────────────────────────────────────── */
+.results-loading,
+.no-session-results {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.625rem 1rem 0.625rem 0;
+  overflow: hidden;
+  transition: opacity 0.15s;
+}
+
+.result-row.out {
+  opacity: 0.5;
+}
+
+.result-pos {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  min-width: 3rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.result-pos.pos-out {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.result-color-bar {
+  width: 4px;
+  align-self: stretch;
+  background: var(--team-color, #555);
+  border-radius: 0 2px 2px 0;
+  flex-shrink: 0;
+}
+
+.result-driver {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.result-code {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.result-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.result-team {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  color: var(--team-color, #555);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 3.5rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.result-pts {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 2.75rem;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--teal);
+}
+
+.result-pts.pts-zero {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.result-pts.pts-neg {
+  color: #f87171;
+}
