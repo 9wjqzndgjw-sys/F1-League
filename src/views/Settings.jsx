@@ -52,6 +52,10 @@ export default function Settings() {
   const [saving, setSaving] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
   const [gpUpdating, setGpUpdating] = useState(null)
+  const [allManagers, setAllManagers] = useState([])
+  const [draftOrderIds, setDraftOrderIds] = useState([])
+  const [orderSaving, setOrderSaving] = useState(false)
+  const [orderMsg, setOrderMsg] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -59,11 +63,14 @@ export default function Settings() {
       supabase.from('managers').select('*').eq('id', user.id).maybeSingle(),
       supabase.from('league_settings').select('*').eq('id', 1).single(),
       supabase.from('grand_prix').select('id,name,round_number,status').order('round_number'),
-    ]).then(([{ data: mgr }, { data: cfg }, { data: gpsData }]) => {
+      supabase.from('managers').select('id, display_name').order('display_name'),
+    ]).then(([{ data: mgr }, { data: cfg }, { data: gpsData }, { data: mgrsData }]) => {
       setManager(mgr)
       setDisplayName(mgr?.display_name ?? '')
       setSettings(cfg)
       setGps(gpsData ?? [])
+      setAllManagers(mgrsData ?? [])
+      setDraftOrderIds(cfg?.initial_draft_order ?? [])
       if (cfg) {
         setDraftRounds(cfg.draft_rounds ?? 3)
         setPayoutFirst(cfg.payout_first ?? 8)
@@ -98,6 +105,23 @@ export default function Settings() {
     setSaving(false)
     setSavedMsg(error ? 'Error saving.' : 'Saved!')
     setTimeout(() => setSavedMsg(''), 2000)
+  }
+
+  async function randomizeDraftOrder() {
+    const ids = allManagers.map(m => m.id)
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ids[i], ids[j]] = [ids[j], ids[i]]
+    }
+    setOrderSaving(true)
+    const { error } = await supabase
+      .from('league_settings')
+      .update({ initial_draft_order: ids })
+      .eq('id', 1)
+    setOrderSaving(false)
+    if (!error) setDraftOrderIds(ids)
+    setOrderMsg(error ? 'Error saving.' : 'Saved!')
+    setTimeout(() => setOrderMsg(''), 2000)
   }
 
   async function advanceGp(gp) {
@@ -197,6 +221,39 @@ export default function Settings() {
           </div>
         )}
       </Section>
+
+      {/* Commissioner — Draft order */}
+      {isCommissioner && (
+        <Section title="Draft Order">
+          <div className="settings-card">
+            {draftOrderIds.length === 0 ? (
+              <p className="draft-order-empty">Not set — randomize to generate.</p>
+            ) : (
+              <ol className="draft-order-list">
+                {draftOrderIds.map((id, i) => {
+                  const mgr = allManagers.find(m => m.id === id)
+                  return (
+                    <li key={id} className="draft-order-item">
+                      <span className="draft-order-pos">{i + 1}</span>
+                      <span className="draft-order-name">{mgr?.display_name ?? id}</span>
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
+          </div>
+          <div className="settings-save-row">
+            <button
+              className="settings-save-btn"
+              onClick={randomizeDraftOrder}
+              disabled={orderSaving}
+            >
+              {orderSaving ? 'Saving…' : 'Randomize'}
+            </button>
+            {orderMsg && <span className="settings-saved">{orderMsg}</span>}
+          </div>
+        </Section>
+      )}
 
       {/* Commissioner — GP status manager */}
       {isCommissioner && (
