@@ -25,8 +25,8 @@ export default function Login() {
   useEffect(() => {
     supabase
       .from('managers')
-      .select('id, name, display_name, slug')
-      .order('name')
+      .select('id, display_name, slug')
+      .order('display_name')
       .then(({ data }) => setManagers(data ?? []))
   }, [])
 
@@ -52,7 +52,7 @@ export default function Login() {
               className="manager-pick-btn"
               onClick={() => setSelected(m)}
             >
-              {m.display_name ?? m.name}
+              {m.display_name}
             </button>
           ))}
         </div>
@@ -65,7 +65,7 @@ export default function Login() {
       <Brand />
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="login-who">
-          <span className="login-who-name">{selected.display_name ?? selected.name}</span>
+          <span className="login-who-name">{selected.display_name}</span>
           <button
             type="button"
             className="login-who-change"
