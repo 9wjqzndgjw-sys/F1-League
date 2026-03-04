@@ -1665,6 +1665,65 @@
   color: var(--text-muted);
 }
 
+.driver-sync {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sync-msg {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.sync-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sync-change-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.sync-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.sync-badge.add {
+  background: rgba(0, 210, 190, 0.15);
+  color: var(--teal);
+}
+
+.sync-badge.update {
+  background: rgba(255, 180, 0, 0.15);
+  color: #ffb400;
+}
+
+.sync-change-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.sync-change-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 .gp-manager-list {
   background: var(--card);
   border: 1px solid var(--border);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { supabase } from '../lib/supabase'
+import DriverSync from '../components/DriverSync.jsx'
 
 const STATUS_NEXT = {
   upcoming: { label: 'Open Draft', next: 'drafting' },
@@ -273,6 +274,13 @@ export default function Settings() {
           </div>
         )}
       </Section>
+
+      {/* Commissioner — Driver sync */}
+      {isCommissioner && (
+        <Section title="Driver Sync">
+          <DriverSync />
+        </Section>
+      )}
 
       {/* Commissioner — GP status manager */}
       {isCommissioner && (
