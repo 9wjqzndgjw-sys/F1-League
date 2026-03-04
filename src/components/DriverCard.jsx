@@ -12,7 +12,7 @@ export default function DriverCard({ driver, onPick, interactive, selected }) {
       <span className="driver-number">#{driver.number}</span>
       <div className="driver-info">
         <span className="driver-code">{driver.code}</span>
-        <span className="driver-name">{driver.name}</span>
+        <span className="driver-name">{driver.full_name}</span>
         <span className="driver-team">{driver.constructor?.short_name ?? ''}</span>
       </div>
     </div>
