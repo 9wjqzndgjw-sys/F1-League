@@ -40,6 +40,11 @@ export default function Settings() {
   const [gps, setGps] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Name editing
+  const [displayName, setDisplayName] = useState('')
+  const [nameSaving, setNameSaving] = useState(false)
+  const [nameMsg, setNameMsg] = useState('')
+
   // Commissioner editable fields
   const [draftRounds, setDraftRounds] = useState(3)
   const [payoutFirst, setPayoutFirst] = useState(8)
@@ -56,6 +61,7 @@ export default function Settings() {
       supabase.from('grand_prix').select('id,name,round_number,status').order('round_number'),
     ]).then(([{ data: mgr }, { data: cfg }, { data: gpsData }]) => {
       setManager(mgr)
+      setDisplayName(mgr?.display_name ?? '')
       setSettings(cfg)
       setGps(gpsData ?? [])
       if (cfg) {
@@ -66,6 +72,18 @@ export default function Settings() {
       setLoading(false)
     })
   }, [user])
+
+  async function saveName() {
+    if (!displayName.trim()) return
+    setNameSaving(true)
+    const { error } = await supabase
+      .from('managers')
+      .update({ display_name: displayName.trim() })
+      .eq('id', user.id)
+    setNameSaving(false)
+    setNameMsg(error ? 'Error saving.' : 'Saved!')
+    setTimeout(() => setNameMsg(''), 2000)
+  }
 
   async function saveLeagueSettings() {
     setSaving(true)
@@ -103,13 +121,30 @@ export default function Settings() {
       {/* Account */}
       <Section title="Account">
         <div className="settings-card">
-          <InfoRow label="Name" value={manager?.display_name ?? manager?.name ?? '—'} />
-          <InfoRow label="Email" value={user?.email ?? '—'} />
+          <InfoRow label="Name" value={
+            <input
+              className="settings-input inline"
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="Your name"
+            />
+          } />
           {isCommissioner && (
             <InfoRow label="Role" value={
               <span className="commissioner-badge">Commissioner</span>
             } />
           )}
+        </div>
+        <div className="settings-save-row">
+          <button
+            className="settings-save-btn"
+            onClick={saveName}
+            disabled={nameSaving}
+          >
+            {nameSaving ? 'Saving…' : 'Save Name'}
+          </button>
+          {nameMsg && <span className="settings-saved">{nameMsg}</span>}
         </div>
         <button className="signout-full-btn" onClick={signOut}>Sign Out</button>
       </Section>
