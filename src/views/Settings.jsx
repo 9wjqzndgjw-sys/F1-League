@@ -113,13 +113,26 @@ export default function Settings() {
       const j = Math.floor(Math.random() * (i + 1));
       [ids[i], ids[j]] = [ids[j], ids[i]]
     }
+    const now = new Date().toISOString()
+    const newCount = (settings?.draft_order_randomized_count ?? 0) + 1
     setOrderSaving(true)
     const { error } = await supabase
       .from('league_settings')
-      .update({ initial_draft_order: ids })
+      .update({
+        initial_draft_order: ids,
+        draft_order_randomized_count: newCount,
+        draft_order_last_randomized_at: now,
+      })
       .eq('id', 1)
     setOrderSaving(false)
-    if (!error) setDraftOrderIds(ids)
+    if (!error) {
+      setDraftOrderIds(ids)
+      setSettings(prev => ({
+        ...prev,
+        draft_order_randomized_count: newCount,
+        draft_order_last_randomized_at: now,
+      }))
+    }
     setOrderMsg(error ? 'Error saving.' : 'Saved!')
     setTimeout(() => setOrderMsg(''), 2000)
   }
@@ -222,26 +235,32 @@ export default function Settings() {
         )}
       </Section>
 
-      {/* Commissioner — Draft order */}
-      {isCommissioner && (
-        <Section title="Draft Order">
-          <div className="settings-card">
-            {draftOrderIds.length === 0 ? (
-              <p className="draft-order-empty">Not set — randomize to generate.</p>
-            ) : (
-              <ol className="draft-order-list">
-                {draftOrderIds.map((id, i) => {
-                  const mgr = allManagers.find(m => m.id === id)
-                  return (
-                    <li key={id} className="draft-order-item">
-                      <span className="draft-order-pos">{i + 1}</span>
-                      <span className="draft-order-name">{mgr?.display_name ?? id}</span>
-                    </li>
-                  )
-                })}
-              </ol>
-            )}
-          </div>
+      {/* Draft order — visible to all, randomize commissioner-only */}
+      <Section title="Draft Order">
+        <div className="settings-card">
+          {draftOrderIds.length === 0 ? (
+            <p className="draft-order-empty">Not set yet.</p>
+          ) : (
+            <ol className="draft-order-list">
+              {draftOrderIds.map((id, i) => {
+                const mgr = allManagers.find(m => m.id === id)
+                return (
+                  <li key={id} className="draft-order-item">
+                    <span className="draft-order-pos">{i + 1}</span>
+                    <span className="draft-order-name">{mgr?.display_name ?? id}</span>
+                  </li>
+                )
+              })}
+            </ol>
+          )}
+          {settings?.draft_order_last_randomized_at && (
+            <div className="draft-order-meta">
+              <span>Randomized {settings.draft_order_randomized_count ?? 0} time{settings.draft_order_randomized_count !== 1 ? 's' : ''}</span>
+              <span>Last: {new Date(settings.draft_order_last_randomized_at).toLocaleString()}</span>
+            </div>
+          )}
+        </div>
+        {isCommissioner && (
           <div className="settings-save-row">
             <button
               className="settings-save-btn"
@@ -252,8 +271,8 @@ export default function Settings() {
             </button>
             {orderMsg && <span className="settings-saved">{orderMsg}</span>}
           </div>
-        </Section>
-      )}
+        )}
+      </Section>
 
       {/* Commissioner — GP status manager */}
       {isCommissioner && (

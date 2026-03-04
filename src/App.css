@@ -1654,6 +1654,17 @@
   font-weight: 500;
 }
 
+.draft-order-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .gp-manager-list {
   background: var(--card);
   border: 1px solid var(--border);
