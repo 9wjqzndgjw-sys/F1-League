@@ -237,6 +237,71 @@
   cursor: not-allowed;
 }
 
+.login-prompt {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  align-self: flex-start;
+}
+
+.manager-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.manager-pick-btn {
+  padding: 1rem 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+
+.manager-pick-btn:hover {
+  border-color: var(--red);
+  background: rgba(225, 6, 0, 0.06);
+}
+
+.login-who {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.login-who-name {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.login-who-change {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.login-who-change:hover {
+  color: var(--text);
+}
+
 /* ── View Placeholders ───────────────────────────────── */
 .view-placeholder {
   display: flex;

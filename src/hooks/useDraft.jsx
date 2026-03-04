@@ -4,7 +4,7 @@ import { useAuth } from './useAuth.jsx'
 import { getDraftOrder } from '../lib/draftOrder'
 
 export function useDraft() {
-  const { user } = useAuth()
+  const { manager } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [settings, setSettings] = useState(null)
@@ -109,7 +109,7 @@ export function useDraft() {
 
   const currentPickIndex = picks.length
   const currentSlot = draftOrder[currentPickIndex] ?? null
-  const isMyTurn = !!(currentSlot && user && currentSlot.managerId === user.id)
+  const isMyTurn = !!(currentSlot && manager && currentSlot.managerId === manager.id)
   const isDraftComplete = draftOrder.length > 0 && picks.length >= draftOrder.length
 
   const pickedDriverIds = useMemo(
@@ -132,12 +132,12 @@ export function useDraft() {
 
   const makePick = useCallback(
     async ({ driverId = null, constructorId = null }) => {
-      if (!currentSlot || !gp || !user) return { error: 'No active pick slot' }
+      if (!currentSlot || !gp || !manager) return { error: 'No active pick slot' }
       const { data, error } = await supabase
         .from('draft_picks')
         .insert({
           gp_id: gp.id,
-          manager_id: user.id,
+          manager_id: manager.id,
           pick_number: currentSlot.pick,
           round_number: currentSlot.round,
           driver_id: driverId,

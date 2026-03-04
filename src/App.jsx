@@ -19,11 +19,11 @@ const VIEWS = {
 }
 
 export default function App() {
-  const { session, loading } = useAuth()
+  const { session, manager, loading } = useAuth()
   const [view, setView] = useState('standings')
 
   if (loading) return <div className="splash" />
-  if (!session) return <Login />
+  if (!session || !manager) return <Login />
 
   const View = VIEWS[view]
 
