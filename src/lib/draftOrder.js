@@ -1,4 +1,5 @@
 export function rotateOrder(baseOrder, gpIdx) {
+  if (!baseOrder?.length) return []
   const shift = gpIdx % baseOrder.length
   return [...baseOrder.slice(shift), ...baseOrder.slice(0, shift)]
 }
