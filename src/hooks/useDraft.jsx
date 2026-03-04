@@ -154,7 +154,7 @@ export function useDraft() {
       }
       return { error }
     },
-    [currentSlot, gp, user]
+    [currentSlot, gp, manager]
   )
 
   return {
