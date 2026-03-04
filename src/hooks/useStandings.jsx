@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { calcDriverScore, calcConstructorScores } from '../lib/scoring'
-import { CONSTRUCTOR_SCORING } from '../lib/constants'
 
 export function useStandings() {
   const [loading, setLoading] = useState(true)
@@ -67,6 +66,10 @@ export function useStandings() {
 
     const payoutFirst = settings?.payout_first ?? 8
     const payoutSecond = settings?.payout_second ?? 2
+    const raceScoring = (settings?.scoring_race ?? []).map(Number)
+    const sprintScoring = (settings?.scoring_sprint ?? []).map(Number)
+    const constructorScoring = (settings?.scoring_constructor ?? []).map(Number)
+    const dnfPenalty = settings?.dnf_penalty ?? 0
 
     const driversById = Object.fromEntries(drivers.map((d) => [d.id, d]))
     const constructorsById = Object.fromEntries(constructors.map((c) => [c.id, c]))
@@ -88,9 +91,9 @@ export function useStandings() {
       // Fantasy pts for every driver (needed for constructor ranking)
       const driverFantasyPts = Object.fromEntries(
         drivers.map((d) => {
-          const racePts = calcDriverScore(resultMap[d.id]?.race, 'race')
+          const racePts = calcDriverScore(resultMap[d.id]?.race, 'race', raceScoring, sprintScoring, dnfPenalty)
           const sprintPts = resultMap[d.id]?.sprint
-            ? calcDriverScore(resultMap[d.id].sprint, 'sprint')
+            ? calcDriverScore(resultMap[d.id].sprint, 'sprint', raceScoring, sprintScoring, dnfPenalty)
             : 0
           return [d.id, racePts + sprintPts]
         })
@@ -103,7 +106,7 @@ export function useStandings() {
         byConstructor[d.constructor_id].push(driverFantasyPts[d.id])
       }
 
-      const conScoreList = calcConstructorScores(constructors, byConstructor, CONSTRUCTOR_SCORING)
+      const conScoreList = calcConstructorScores(constructors, byConstructor, constructorScoring)
       const conPtsMap = Object.fromEntries(
         conScoreList.map((cs) => [cs.constructorId, cs.constructorPoints])
       )

@@ -13,7 +13,7 @@ export function getDraftOrder(baseOrder, gpIdx, numRounds) {
       round: roundIdx + 1,
       pick: roundIdx * 7 + pickIdx + 1,
       managerId,
-      type: roundIdx === 2 ? 'constructor' : 'driver',
+      type: roundIdx >= 2 ? 'any' : 'driver',
     }))
   )
 }

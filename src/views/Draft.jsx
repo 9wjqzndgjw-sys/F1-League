@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useDraft } from '../hooks/useDraft.jsx'
 import DriverCard from '../components/DriverCard.jsx'
 import DraftSlot from '../components/DraftSlot.jsx'
@@ -48,7 +48,11 @@ function OnTheClock({ slot, managers, picks, draftOrder, isDraftComplete, isMyTu
           <span className="otc-manager">{managerName}</span>
           <span className="otc-meta">
             Pick {pickNum} of {totalPicks} · Round {slot?.round ?? '—'} ·{' '}
-            {slot?.type === 'constructor' ? 'Constructor' : 'Driver'}
+            {slot?.type === 'any'
+              ? 'Driver or Constructor'
+              : slot?.type === 'constructor'
+              ? 'Constructor'
+              : 'Driver'}
           </span>
         </>
       )}
@@ -65,25 +69,50 @@ function PickList({
   selected,
   onSelect,
 }) {
+  const [anyMode, setAnyMode] = useState('driver')
+
+  const switchMode = useCallback((mode) => {
+    setAnyMode(mode)
+    onSelect(null)
+  }, [onSelect])
+
   const waitingManager = currentSlot
     ? (managers[currentSlot.managerId]?.display_name ??
        managers[currentSlot.managerId]?.name ??
        '—')
     : '—'
+  const isAnyPick = currentSlot?.type === 'any'
   const isConstructorPick = currentSlot?.type === 'constructor'
-  const items = isConstructorPick ? availableConstructors : availableDrivers
+  const showConstructors = isConstructorPick || (isAnyPick && anyMode === 'constructor')
+  const items = showConstructors ? availableConstructors : availableDrivers
 
   return (
     <div className="pick-list">
       {!isMyTurn && (
         <div className="waiting-banner">Waiting for {waitingManager} to pick…</div>
       )}
-      {isMyTurn && (
+      {isAnyPick && (
+        <div className="any-pick-toggle">
+          <button
+            className={`any-toggle-btn${anyMode === 'driver' ? ' active' : ''}`}
+            onClick={() => switchMode('driver')}
+          >
+            Drivers
+          </button>
+          <button
+            className={`any-toggle-btn${anyMode === 'constructor' ? ' active' : ''}`}
+            onClick={() => switchMode('constructor')}
+          >
+            Constructors
+          </button>
+        </div>
+      )}
+      {isMyTurn && !isAnyPick && (
         <p className="your-turn-hint">
           Tap a {isConstructorPick ? 'constructor' : 'driver'} to select
         </p>
       )}
-      {isConstructorPick
+      {showConstructors
         ? items.map((con) => (
             <ConstructorCard
               key={con.id}
@@ -129,7 +158,12 @@ function BoardView({ draftOrder, picks, managers, drivers, constructors }) {
       {rounds.map(({ round, type, slots }) => (
         <div key={round} className="board-round">
           <div className="round-header">
-            Round {round} — {type === 'constructor' ? 'Constructors' : 'Drivers'}
+            Round {round} —{' '}
+            {type === 'any'
+              ? 'Drivers & Constructors'
+              : type === 'constructor'
+              ? 'Constructors'
+              : 'Drivers'}
           </div>
           {slots.map((slot) => {
             const pick = pickByNumber[slot.pick]
@@ -185,7 +219,12 @@ export default function Draft() {
   if (error) return <div className="view-loading">Error: {error}</div>
   if (gp === null) return <NoDraft />
 
-  const pickTabLabel = currentSlot?.type === 'constructor' ? 'Constructors' : 'Drivers'
+  const pickTabLabel =
+    currentSlot?.type === 'any'
+      ? 'Pick'
+      : currentSlot?.type === 'constructor'
+      ? 'Constructors'
+      : 'Drivers'
 
   async function handleConfirm() {
     if (!selected || submitting) return

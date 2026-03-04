@@ -1,10 +1,8 @@
-import { RACE_SCORING, SPRINT_SCORING, DNF_PENALTY } from './constants'
-
-export function calcDriverScore(result, sessionType) {
+export function calcDriverScore(result, sessionType, raceScoring, sprintScoring, dnfPenalty = 0) {
   if (!result) return 0
-  if (result.is_dnf) return DNF_PENALTY
+  if (result.is_dnf) return dnfPenalty
   if (result.is_dns || result.is_dsq) return 0
-  const scoring = sessionType === 'sprint' ? SPRINT_SCORING : RACE_SCORING
+  const scoring = sessionType === 'sprint' ? sprintScoring : raceScoring
   const idx = result.position - 1
   return idx >= 0 && idx < scoring.length ? scoring[idx] : 0
 }
