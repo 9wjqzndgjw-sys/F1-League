@@ -18,14 +18,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) {
-        setManager(await fetchManager(session.user.id))
-      }
-      setLoading(false)
-    })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       if (session?.user) {
@@ -33,6 +25,7 @@ export function AuthProvider({ children }) {
       } else {
         setManager(null)
       }
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
