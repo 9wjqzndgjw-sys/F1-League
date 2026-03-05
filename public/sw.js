@@ -31,8 +31,8 @@ self.addEventListener('fetch', event => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Never intercept Supabase traffic
-  if (url.hostname.includes('supabase.co')) return
+  // Never intercept Supabase or cross-origin traffic
+  if (url.origin !== self.location.origin) return
 
   // Navigation: serve the SPA shell (network first, 3s timeout)
   if (request.mode === 'navigate') {
