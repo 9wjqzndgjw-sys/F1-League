@@ -1849,3 +1849,93 @@
 .gp-action-btn.upcoming { background: rgba(0,210,190,0.15); color: var(--teal); }
 .gp-action-btn.drafting { background: rgba(251,191,36,0.12); color: #fbbf24; }
 .gp-action-btn.drafted  { background: rgba(74,222,128,0.12); color: #4ade80; }
+
+/* ── Scoring View ────────────────────────────────────── */
+.scoring-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.scoring-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scoring-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 0 0.25rem;
+}
+
+.scoring-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 0 0.25rem;
+  line-height: 1.45;
+}
+
+.scoring-table {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.scoring-table-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.scoring-table-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.scoring-table-row:last-child {
+  border-bottom: none;
+}
+
+.scoring-table-row.alt {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.scoring-pts {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--teal);
+}
+
+.scoring-pts.zero {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.scoring-pts.neg {
+  color: #f87171;
+}
+
+.payout-green {
+  color: #4ade80;
+  font-weight: 600;
+}

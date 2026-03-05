@@ -6,6 +6,7 @@ const VIEW_TITLES = {
   results: 'Results',
   calendar: 'Calendar',
   settings: 'Settings',
+  scoring: 'Scoring',
 }
 
 export default function Header({ view }) {
