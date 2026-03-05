@@ -142,7 +142,7 @@ export function useDraft() {
           round_number: currentSlot.round,
           driver_id: driverId,
           constructor_id: constructorId,
-          pick_type: currentSlot.type,
+          pick_type: driverId ? 'driver' : 'constructor',
         })
         .select()
         .single()
