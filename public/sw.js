@@ -1,4 +1,4 @@
-const CACHE = 'f1-fantasy-v1'
+const CACHE = 'f1-fantasy-__BUILD_ID__'
 
 const PRECACHE = [
   '/',
