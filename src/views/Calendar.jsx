@@ -77,7 +77,10 @@ export default function Calendar() {
           >
             <span className="gp-round-badge">R{String(gp.round_number).padStart(2, '0')}</span>
             <div className="gp-info">
-              <span className="gp-card-name">{gp.name}</span>
+              <div className="gp-card-name-row">
+                <span className="gp-card-name">{gp.name}</span>
+                {gp.has_sprint && <span className="gp-sprint-badge">Sprint</span>}
+              </div>
               {(gp.race_date ?? gp.date) && (
                 <span className="gp-card-date">{formatDate(gp.race_date ?? gp.date)}</span>
               )}
