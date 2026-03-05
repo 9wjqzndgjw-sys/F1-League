@@ -34,13 +34,19 @@ self.addEventListener('fetch', event => {
   // Never intercept Supabase traffic
   if (url.hostname.includes('supabase.co')) return
 
-  // Navigation: serve the SPA shell (network first, 3s timeout)
+  // Navigation: cache-first so the shell loads instantly, revalidate in background
   if (request.mode === 'navigate') {
     event.respondWith(
-      Promise.race([
-        fetch(request),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
-      ]).catch(() => caches.match('/index.html'))
+      caches.match('/index.html').then(cached => {
+        // Always revalidate in the background so next load gets fresh HTML
+        fetch('/index.html').then(res => {
+          if (res.ok) caches.open(CACHE).then(c => c.put('/index.html', res.clone()))
+        }).catch(() => {})
+        // Serve cache immediately; fall back to network if cache is cold
+        return cached || fetch(request).catch(() =>
+          new Response('App offline – please reconnect and refresh.', { status: 503 })
+        )
+      })
     )
     return
   }
