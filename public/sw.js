@@ -34,10 +34,13 @@ self.addEventListener('fetch', event => {
   // Never intercept Supabase traffic
   if (url.hostname.includes('supabase.co')) return
 
-  // Navigation: serve the SPA shell (network first)
+  // Navigation: serve the SPA shell (network first, 3s timeout)
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
+      Promise.race([
+        fetch(request),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
+      ]).catch(() => caches.match('/index.html'))
     )
     return
   }
