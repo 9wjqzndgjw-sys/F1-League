@@ -20,12 +20,15 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
-      if (session?.user) {
-        setManager(await fetchManager(session.user.id))
-      } else {
-        setManager(null)
+      try {
+        if (session?.user) {
+          setManager(await fetchManager(session.user.id))
+        } else {
+          setManager(null)
+        }
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
