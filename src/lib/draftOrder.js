@@ -7,14 +7,16 @@ export function rotateOrder(baseOrder, gpIdx) {
 export function getDraftOrder(baseOrder, gpIdx, numRounds) {
   const rotated = rotateOrder(baseOrder, gpIdx)
   const reversed = [...rotated].reverse()
-  const rounds = [rotated, reversed, reversed]
-  if (numRounds >= 4) rounds.push(rotated)
+  const rounds = []
+  for (let i = 0; i < numRounds; i++) {
+    rounds.push(i % 2 === 0 ? rotated : reversed)
+  }
   return rounds.flatMap((order, roundIdx) =>
     order.map((managerId, pickIdx) => ({
       round: roundIdx + 1,
-      pick: roundIdx * 7 + pickIdx + 1,
+      pick: roundIdx * order.length + pickIdx + 1,
       managerId,
-      type: roundIdx >= 2 ? 'any' : 'driver',
+      type: roundIdx < 3 ? 'driver' : 'constructor',
     }))
   )
 }
