@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
       if (cached) return cached
       return fetch(request).then(response => {
         // Only cache successful same-origin responses
-        if (response.ok && url.origin === self.location.origin) {
+        if (response.ok && request.method === 'GET' && url.origin === self.location.origin) {
           const clone = response.clone()
           caches.open(CACHE).then(cache => cache.put(request, clone))
         }
