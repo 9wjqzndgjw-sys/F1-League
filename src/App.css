@@ -1228,10 +1228,29 @@
   gap: 0.1rem;
 }
 
+.gp-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .gp-card-name {
   font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.2;
+}
+
+.gp-sprint-badge {
+  font-family: var(--font-heading);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  border: 1px solid var(--teal);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  flex-shrink: 0;
 }
 
 .gp-card-date {
