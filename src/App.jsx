@@ -22,7 +22,7 @@ export default function App() {
   const { session, manager, loading } = useAuth()
   const [view, setView] = useState('standings')
 
-  if (loading) return (
+  if (loading || (session && !manager)) return (
     <div className="splash">
       <div className="splash-badge">F1</div>
       <span className="splash-title">Fantasy 2026</span>

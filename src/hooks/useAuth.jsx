@@ -13,26 +13,20 @@ async function fetchManager(userId) {
 }
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null)
+  // undefined = auth not yet initialized, null = no session
+  const [session, setSession] = useState(undefined)
   const [manager, setManager] = useState(null)
-  const [loading, setLoading] = useState(true)
 
+  const loading = session === undefined
+
+  // Effect 1: listen for auth state — synchronous only, no DB calls
   useEffect(() => {
-    // Fallback: if auth never resolves (e.g. network unavailable), unblock the UI
-    const fallback = setTimeout(() => setLoading(false), 5000)
+    // Fallback: if auth never fires (e.g. network down), treat as no session
+    const fallback = setTimeout(() => setSession(null), 5000)
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      clearTimeout(fallback)
       setSession(session)
-      try {
-        if (session?.user) {
-          setManager(await fetchManager(session.user.id))
-        } else {
-          setManager(null)
-        }
-      } finally {
-        clearTimeout(fallback)
-        setLoading(false)
-      }
     })
 
     return () => {
@@ -40,6 +34,16 @@ export function AuthProvider({ children }) {
       subscription.unsubscribe()
     }
   }, [])
+
+  // Effect 2: load manager row whenever session changes
+  useEffect(() => {
+    if (session === undefined) return
+    if (!session?.user) {
+      setManager(null)
+      return
+    }
+    fetchManager(session.user.id).then(setManager)
+  }, [session])
 
   async function signIn(slug, password) {
     const email = `${slug}@racef1.com`
