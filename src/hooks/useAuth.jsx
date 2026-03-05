@@ -22,7 +22,6 @@ export function AuthProvider({ children }) {
     const fallback = setTimeout(() => setLoading(false), 5000)
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      clearTimeout(fallback)
       setSession(session)
       try {
         if (session?.user) {
@@ -31,6 +30,7 @@ export function AuthProvider({ children }) {
           setManager(null)
         }
       } finally {
+        clearTimeout(fallback)
         setLoading(false)
       }
     })
