@@ -18,7 +18,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Fallback: if auth never resolves (e.g. network unavailable), unblock the UI
+    const fallback = setTimeout(() => setLoading(false), 5000)
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      clearTimeout(fallback)
       setSession(session)
       try {
         if (session?.user) {
@@ -31,7 +35,10 @@ export function AuthProvider({ children }) {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(fallback)
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function signIn(slug, password) {
