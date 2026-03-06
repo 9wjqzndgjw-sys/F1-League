@@ -43,6 +43,18 @@ const TABS = [
     ),
   },
   {
+    id: 'scoring',
+    label: 'Scoring',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+        <circle cx="12" cy="8" r="5" />
+        <path d="M12 3v2M12 11v2" />
+        <path d="M9.5 6h5M9.5 10h3" />
+        <path d="M7 17l-3 4M17 17l3 4M7 17h10" />
+      </svg>
+    ),
+  },
+  {
     id: 'settings',
     label: 'Settings',
     icon: (
