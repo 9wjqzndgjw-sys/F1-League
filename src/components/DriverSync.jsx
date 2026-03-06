@@ -107,17 +107,19 @@ export default function DriverSync() {
       if (d.color) colorByTeam[d.team_id] = d.color
     }
 
+    let failures = 0
     for (const change of diff) {
       const color = colorByTeam[change.teamId] ?? '#888888'
 
       if (change.type === 'add') {
-        await supabase.from('drivers').insert({
+        const { error } = await supabase.from('drivers').insert({
           number: change.number,
           code: change.code,
           full_name: change.fullName,
           team_id: change.teamId,
           color,
         })
+        if (error) failures++
       } else if (change.type === 'update') {
         const updates = {}
         if (change.fields.includes('name')) updates.full_name = change.fullName
@@ -126,13 +128,16 @@ export default function DriverSync() {
           updates.team_id = change.teamId
           updates.color = color
         }
-        await supabase.from('drivers').update(updates).eq('id', change.dbId)
+        const { error } = await supabase.from('drivers').update(updates).eq('id', change.dbId)
+        if (error) failures++
       }
     }
 
     setStatus('done')
     setDiff([])
-    setMsg('Changes applied.')
+    setMsg(failures > 0
+      ? `${diff.length - failures} of ${diff.length} changes applied — ${failures} failed.`
+      : 'Changes applied.')
   }
 
   return (
