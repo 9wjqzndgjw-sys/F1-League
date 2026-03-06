@@ -78,51 +78,42 @@ function ManagerScoreCard({ rank, score, isScored, payoutFirst, payoutSecond, is
 export default function Results() {
   const { manager: currentManager } = useAuth()
 
+  // ── Original state (unchanged) ────────────────────────
   const [gps, setGps]               = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [results, setResults]       = useState([])
-  const [picks, setPicks]           = useState([])
   const [drivers, setDrivers]       = useState([])
-  const [managers, setManagers]     = useState([])
-  const [constructors, setConstructors] = useState([])
-  const [leagueSettings, setLeagueSettings] = useState(null)
-  const [session, setSession]       = useState('race') // 'race' | 'sprint' | 'scores'
+  const [session, setSession]       = useState('race')
   const [loading, setLoading]       = useState(true)
   const [resultsLoading, setResultsLoading] = useState(false)
   const [error, setError]           = useState(null)
 
-  // Initial load
+  // ── Extra state for Scores tab ────────────────────────
+  const [picks, setPicks]           = useState([])
+  const [managers, setManagers]     = useState([])
+  const [constructors, setConstructors] = useState([])
+  const [leagueSettings, setLeagueSettings] = useState(null)
+
+  // ── Original initial load (unchanged) ─────────────────
   useEffect(() => {
     let cancelled = false
     Promise.all([
       supabase
         .from('grand_prix')
         .select('*')
-        .in('status', ['drafted', 'scored'])
+        .in('status', ['drafting', 'drafted', 'scored'])
         .order('round_number', { ascending: false }),
       supabase
         .from('drivers')
         .select('*, constructor:constructors(id,name,short_name,color)'),
-      supabase.from('managers').select('*'),
-      supabase.from('constructors').select('*'),
-      supabase.from('league_settings').select('*').eq('id', 1).single(),
     ])
-      .then(([
-        { data: gpsData,  error: gpsErr  },
-        { data: drvsData, error: drvsErr },
-        { data: mgrsData },
-        { data: consData },
-        { data: cfg      },
-      ]) => {
+      .then(([{ data: gpsData, error: gpsErr }, { data: drvsData, error: drvsErr }]) => {
         if (cancelled) return
         if (gpsErr || drvsErr) {
           setError((gpsErr ?? drvsErr).message)
         } else {
           setGps(gpsData ?? [])
           setDrivers(drvsData ?? [])
-          setManagers(mgrsData ?? [])
-          setConstructors(consData ?? [])
-          setLeagueSettings(cfg)
           if (gpsData?.length) setSelectedId(gpsData[0].id)
         }
       })
@@ -131,19 +122,36 @@ export default function Results() {
     return () => { cancelled = true }
   }, [])
 
-  // Load results + picks whenever selected GP changes
+  // ── Extra load: managers + constructors + settings ────
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      supabase.from('managers').select('*'),
+      supabase.from('constructors').select('*'),
+      supabase.from('league_settings').select('*').eq('id', 1).maybeSingle(),
+    ])
+      .then(([{ data: mgrs }, { data: cons }, { data: cfg }]) => {
+        if (cancelled) return
+        setManagers(mgrs ?? [])
+        setConstructors(cons ?? [])
+        setLeagueSettings(cfg)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  // ── Original per-GP load (unchanged) ──────────────────
   useEffect(() => {
     if (!selectedId) return
     let cancelled = false
     setResultsLoading(true)
-    Promise.all([
-      supabase.from('race_results').select('*').eq('gp_id', selectedId),
-      supabase.from('draft_picks').select('*').eq('gp_id', selectedId),
-    ])
-      .then(([{ data: resultsData }, { data: picksData }]) => {
+    supabase
+      .from('race_results')
+      .select('*')
+      .eq('gp_id', selectedId)
+      .then(({ data }) => {
         if (cancelled) return
-        setResults(resultsData ?? [])
-        setPicks(picksData ?? [])
+        setResults(data ?? [])
         setSession('race')
       })
       .catch(() => {})
@@ -151,7 +159,20 @@ export default function Results() {
     return () => { cancelled = true }
   }, [selectedId])
 
-  // ── Derived ───────────────────────────────────────────────
+  // ── Extra per-GP load: picks ───────────────────────────
+  useEffect(() => {
+    if (!selectedId) return
+    let cancelled = false
+    supabase
+      .from('draft_picks')
+      .select('*')
+      .eq('gp_id', selectedId)
+      .then(({ data }) => { if (!cancelled) setPicks(data ?? []) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [selectedId])
+
+  // ── Derived ───────────────────────────────────────────
 
   const driversById = useMemo(
     () => Object.fromEntries(drivers.map((d) => [d.id, d])),
@@ -165,26 +186,22 @@ export default function Results() {
     [results, session]
   )
 
-  // Scoring settings
-  const raceScoring      = (leagueSettings?.scoring_race        ?? []).map(Number)
-  const sprintScoring    = (leagueSettings?.scoring_sprint      ?? []).map(Number)
-  const conScoring       = (leagueSettings?.scoring_constructor ?? []).map(Number)
-  const dnfPenalty       = Number(leagueSettings?.dnf_penalty   ?? 0)
-  const payoutFirst      = leagueSettings?.payout_first  ?? 8
-  const payoutSecond     = leagueSettings?.payout_second ?? 2
+  const raceScoring   = useMemo(() => (leagueSettings?.scoring_race        ?? []).map(Number), [leagueSettings])
+  const sprintScoring = useMemo(() => (leagueSettings?.scoring_sprint      ?? []).map(Number), [leagueSettings])
+  const conScoring    = useMemo(() => (leagueSettings?.scoring_constructor ?? []).map(Number), [leagueSettings])
+  const dnfPenalty    = leagueSettings?.dnf_penalty  ?? 0
+  const payoutFirst   = leagueSettings?.payout_first  ?? 8
+  const payoutSecond  = leagueSettings?.payout_second ?? 2
 
-  // Per-manager GP scores
   const gpScores = useMemo(() => {
     if (!managers.length) return []
 
-    // Map results by driver → session type
     const resultMap = {}
     for (const r of results) {
       if (!resultMap[r.driver_id]) resultMap[r.driver_id] = {}
       resultMap[r.driver_id][r.session_type] = r
     }
 
-    // Driver total fantasy points (race + sprint)
     const driverPts = {}
     for (const d of drivers) {
       const rPts = calcDriverScore(resultMap[d.id]?.race,   'race',   raceScoring, sprintScoring, dnfPenalty)
@@ -194,17 +211,15 @@ export default function Results() {
       driverPts[d.id] = rPts + sPts
     }
 
-    // Constructor ranking → points
     const byConstructor = {}
     for (const d of drivers) {
       if (!byConstructor[d.constructor_id]) byConstructor[d.constructor_id] = []
       byConstructor[d.constructor_id].push(driverPts[d.id])
     }
-    const conScores  = calcConstructorScores(constructors, byConstructor, conScoring)
-    const conPtsMap  = Object.fromEntries(conScores.map((cs) => [cs.constructorId, cs.constructorPoints]))
-    const conById    = Object.fromEntries(constructors.map((c) => [c.id, c]))
+    const conScores = calcConstructorScores(constructors, byConstructor, conScoring)
+    const conPtsMap = Object.fromEntries(conScores.map((cs) => [cs.constructorId, cs.constructorPoints]))
+    const conById   = Object.fromEntries(constructors.map((c) => [c.id, c]))
 
-    // Accumulate per-manager
     const scoreMap = Object.fromEntries(
       managers.map((m) => [m.id, { manager: m, total: 0, picks: [] }])
     )
@@ -213,7 +228,7 @@ export default function Results() {
       if (!s) continue
       if (pick.driver_id) {
         const pts = driverPts[pick.driver_id] ?? 0
-        s.picks.push({ type: 'driver',      entity: driversById[pick.driver_id], pts })
+        s.picks.push({ type: 'driver', entity: driversById[pick.driver_id], pts })
         s.total += pts
       }
       if (pick.constructor_id) {
@@ -229,12 +244,11 @@ export default function Results() {
       const nb = b.manager.display_name ?? b.manager.name ?? ''
       return na.localeCompare(nb)
     })
-  }, [managers, leagueSettings, picks, results, drivers, constructors,
-      raceScoring, sprintScoring, conScoring, dnfPenalty, driversById])
+  }, [managers, picks, results, drivers, constructors, raceScoring, sprintScoring, conScoring, dnfPenalty, driversById])
 
   const selectedGp = gps.find((g) => g.id === selectedId)
 
-  // ── Render ────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────
 
   if (loading) return <div className="view-loading">Loading results…</div>
   if (error)   return <div className="view-loading">Error: {error}</div>
@@ -270,7 +284,7 @@ export default function Results() {
         <span className="results-gp-name">{selectedGp?.name}</span>
       </div>
 
-      {/* Tab bar — always visible */}
+      {/* Tab bar */}
       <div className="results-tabs">
         <button
           className={`results-tab${session === 'race' ? ' active' : ''}`}
@@ -294,39 +308,45 @@ export default function Results() {
         </button>
       </div>
 
-      {/* Content */}
-      {resultsLoading ? (
-        <div className="results-loading">Loading…</div>
-
-      ) : session === 'scores' ? (
+      {/* ── Scores tab ───────────────────────────── */}
+      {session === 'scores' && (
         <div className="scores-list">
-          {gpScores.map((score, i) => (
-            <ManagerScoreCard
-              key={score.manager.id}
-              rank={i + 1}
-              score={score}
-              isScored={selectedGp?.status === 'scored'}
-              payoutFirst={payoutFirst}
-              payoutSecond={payoutSecond}
-              isMe={score.manager.id === currentManager?.id}
-            />
-          ))}
+          {gpScores.length === 0 ? (
+            <div className="no-session-results">No picks found for this round</div>
+          ) : (
+            gpScores.map((score, i) => (
+              <ManagerScoreCard
+                key={score.manager.id}
+                rank={i + 1}
+                score={score}
+                isScored={selectedGp?.status === 'scored'}
+                payoutFirst={payoutFirst}
+                payoutSecond={payoutSecond}
+                isMe={score.manager.id === currentManager?.id}
+              />
+            ))
+          )}
         </div>
+      )}
 
-      ) : (
+      {/* ── Race / Sprint tab ────────────────────── */}
+      {session !== 'scores' && (
         <>
-          {sessionRows.length === 0 && (
+          {resultsLoading && <div className="results-loading">Loading…</div>}
+
+          {!resultsLoading && sessionRows.length === 0 && (
             <div className="no-session-results">
               No {session} results entered for this round yet
             </div>
           )}
-          {sessionRows.length > 0 && (
+
+          {!resultsLoading && sessionRows.length > 0 && (
             <div className="results-list">
               {sessionRows.map((r) => {
-                const driver   = driversById[r.driver_id]
-                const pts      = calcDriverScore(r, session, raceScoring, sprintScoring, dnfPenalty)
-                const label    = posLabel(r)
-                const isOut    = r.is_dnf || r.is_dns || r.is_dsq
+                const driver    = driversById[r.driver_id]
+                const pts       = calcDriverScore(r, session, raceScoring, sprintScoring, dnfPenalty)
+                const label     = posLabel(r)
+                const isOut     = r.is_dnf || r.is_dns || r.is_dsq
                 const teamColor = driver?.constructor?.color ?? '#555'
 
                 return (
