@@ -2197,7 +2197,7 @@
   flex-shrink: 0;
 }
 
-.msc-con-badge {
+.msc-type-badge {
   font-family: var(--font-heading);
   font-size: 0.55rem;
   font-weight: 700;
@@ -2207,6 +2207,8 @@
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   flex-shrink: 0;
+  width: 1.8rem;
+  text-align: center;
 }
 
 .msc-pick-code {

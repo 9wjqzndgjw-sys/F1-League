@@ -32,7 +32,9 @@ function PickRow({ pick, isScored }) {
   return (
     <div className="msc-pick-row" style={{ '--team-color': color }}>
       <div className="msc-pick-bar" />
-      {type === 'constructor' && <span className="msc-con-badge">CON</span>}
+      <span className={`msc-type-badge${type === 'constructor' ? ' con' : ''}`}>
+        {type === 'constructor' ? 'CON' : 'DRV'}
+      </span>
       <span className="msc-pick-code">{code}</span>
       <span className="msc-pick-name">{name}</span>
       <span className={`msc-pick-pts${!isScored ? ' zero' : pts < 0 ? ' neg' : pts === 0 ? ' zero' : ''}`}>
