@@ -150,7 +150,12 @@ export default function Calendar() {
                   <span className="gp-card-date">{formatDate(gp.race_date ?? gp.date)}</span>
                 )}
               </div>
-              <StatusPill status={gp.status} />
+              <div className="gp-card-right">
+                {getTvData(gp.name)?.sessions.some((s) => s.label === 'Sprint') && (
+                  <span className="gp-sprint-chip">Sprint</span>
+                )}
+                <StatusPill status={gp.status} />
+              </div>
             </div>
           ))}
         </div>
