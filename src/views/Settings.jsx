@@ -60,25 +60,30 @@ export default function Settings() {
 
   useEffect(() => {
     if (!user) return
+    let cancelled = false
     Promise.all([
       supabase.from('managers').select('*').eq('id', user.id).maybeSingle(),
       supabase.from('league_settings').select('*').eq('id', 1).single(),
       supabase.from('grand_prix').select('id,name,round_number,status').order('round_number'),
       supabase.from('managers').select('id, display_name').order('display_name'),
-    ]).then(([{ data: mgr }, { data: cfg }, { data: gpsData }, { data: mgrsData }]) => {
-      setManager(mgr)
-      setDisplayName(mgr?.display_name ?? '')
-      setSettings(cfg)
-      setGps(gpsData ?? [])
-      setAllManagers(mgrsData ?? [])
-      setDraftOrderIds(cfg?.initial_draft_order ?? [])
-      if (cfg) {
-        setDraftRounds(cfg.draft_rounds ?? 3)
-        setPayoutFirst(cfg.payout_first ?? 8)
-        setPayoutSecond(cfg.payout_second ?? 2)
-      }
-      setLoading(false)
-    })
+    ])
+      .then(([{ data: mgr }, { data: cfg }, { data: gpsData }, { data: mgrsData }]) => {
+        if (cancelled) return
+        setManager(mgr)
+        setDisplayName(mgr?.display_name ?? '')
+        setSettings(cfg)
+        setGps(gpsData ?? [])
+        setAllManagers(mgrsData ?? [])
+        setDraftOrderIds(cfg?.initial_draft_order ?? [])
+        if (cfg) {
+          setDraftRounds(cfg.draft_rounds ?? 3)
+          setPayoutFirst(cfg.payout_first ?? 8)
+          setPayoutSecond(cfg.payout_second ?? 2)
+        }
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [user])
 
   async function saveName() {

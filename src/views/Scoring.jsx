@@ -30,8 +30,9 @@ export default function Scoring() {
         if (cancelled) return
         if (err) setError(err.message)
         else setSettings(data)
-        setLoading(false)
       })
+      .catch((err) => { if (!cancelled) setError(err.message ?? 'Failed to load') })
+      .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [])
 

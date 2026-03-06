@@ -28,6 +28,7 @@ export default function Results() {
 
   // Initial load: GPs + drivers
   useEffect(() => {
+    let cancelled = false
     Promise.all([
       supabase
         .from('grand_prix')
@@ -37,31 +38,39 @@ export default function Results() {
       supabase
         .from('drivers')
         .select('*, constructor:constructors(id,name,short_name,color)'),
-    ]).then(([{ data: gpsData, error: gpsErr }, { data: drvsData, error: drvsErr }]) => {
-      if (gpsErr || drvsErr) {
-        setError((gpsErr ?? drvsErr).message)
-      } else {
-        setGps(gpsData ?? [])
-        setDrivers(drvsData ?? [])
-        if (gpsData?.length) setSelectedId(gpsData[0].id)
-      }
-      setLoading(false)
-    })
+    ])
+      .then(([{ data: gpsData, error: gpsErr }, { data: drvsData, error: drvsErr }]) => {
+        if (cancelled) return
+        if (gpsErr || drvsErr) {
+          setError((gpsErr ?? drvsErr).message)
+        } else {
+          setGps(gpsData ?? [])
+          setDrivers(drvsData ?? [])
+          if (gpsData?.length) setSelectedId(gpsData[0].id)
+        }
+      })
+      .catch((err) => { if (!cancelled) setError(err.message ?? 'Failed to load') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [])
 
   // Load results whenever selected GP changes
   useEffect(() => {
     if (!selectedId) return
+    let cancelled = false
     setResultsLoading(true)
     supabase
       .from('race_results')
       .select('*')
       .eq('gp_id', selectedId)
       .then(({ data }) => {
+        if (cancelled) return
         setResults(data ?? [])
         setSession('race')
-        setResultsLoading(false)
       })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setResultsLoading(false) })
+    return () => { cancelled = true }
   }, [selectedId])
 
   const driversById = useMemo(

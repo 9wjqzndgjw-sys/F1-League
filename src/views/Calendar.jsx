@@ -79,15 +79,19 @@ export default function Calendar() {
   const [tab, setTab] = useState('schedule')
 
   useEffect(() => {
+    let cancelled = false
     supabase
       .from('grand_prix')
       .select('*')
       .order('round_number')
       .then(({ data, error }) => {
+        if (cancelled) return
         if (error) setError(error.message)
         else setGps(data ?? [])
-        setLoading(false)
       })
+      .catch((err) => { if (!cancelled) setError(err.message ?? 'Failed to load') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [])
 
   if (loading) return <div className="view-loading">Loading calendar…</div>
