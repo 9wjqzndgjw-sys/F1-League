@@ -2105,3 +2105,143 @@
   color: #4ade80;
   font-weight: 600;
 }
+
+/* ── Manager Score Cards (Results → Scores tab) ──────────── */
+.scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.manager-score-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.manager-score-card.me {
+  border-color: var(--teal);
+}
+
+.msc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.msc-rank {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 1.1rem;
+  flex-shrink: 0;
+}
+
+.msc-name {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.msc-payout {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.msc-total {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+
+.msc-total.zero {
+  color: var(--text-muted);
+}
+
+.msc-picks {
+  display: flex;
+  flex-direction: column;
+}
+
+.msc-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.msc-pick-row:last-child {
+  border-bottom: none;
+}
+
+.msc-pick-bar {
+  width: 3px;
+  height: 1.1rem;
+  border-radius: 2px;
+  background: var(--team-color, #555);
+  flex-shrink: 0;
+}
+
+.msc-con-badge {
+  font-family: var(--font-heading);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.msc-pick-code {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  width: 3rem;
+  flex-shrink: 0;
+}
+
+.msc-pick-name {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msc-pick-pts {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+
+.msc-pick-pts.neg  { color: #f87171; }
+.msc-pick-pts.zero { color: var(--text-muted); font-weight: 400; }
+
+.msc-no-picks {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
