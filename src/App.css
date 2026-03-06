@@ -830,6 +830,11 @@
   color: var(--teal);
 }
 
+.slot-badge.any {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted, #888);
+}
+
 /* ── No Draft ────────────────────────────────────────── */
 .no-draft {
   display: flex;

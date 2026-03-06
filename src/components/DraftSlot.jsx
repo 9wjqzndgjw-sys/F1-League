@@ -22,8 +22,16 @@ export default function DraftSlot({ slot, pick, manager, entity, isCurrent }) {
           <span className="slot-pending">{isCurrent ? 'On the clock…' : 'Pending'}</span>
         )}
       </div>
-      <span className={`slot-badge ${slot.type}`}>
-        {slot.type === 'driver' ? 'DRV' : 'CON'}
+      <span className={`slot-badge ${slot.type === 'any' ? (pick?.driver_id ? 'driver' : pick?.constructor_id ? 'constructor' : 'any') : slot.type}`}>
+        {slot.type === 'any'
+          ? pick?.driver_id
+            ? 'DRV'
+            : pick?.constructor_id
+            ? 'CON'
+            : 'ANY'
+          : slot.type === 'driver'
+          ? 'DRV'
+          : 'CON'}
       </span>
     </div>
   )
