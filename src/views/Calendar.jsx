@@ -33,8 +33,11 @@ function StatusPill({ status }) {
 function NetworkBadge({ network }) {
   const color = NETWORK_COLOR[network] ?? '#444'
   return (
-    <span className="tv-network-badge" style={{ background: color }}>
-      {network}
+    <span
+      className={`tv-network-badge${network === 'Free' ? ' free' : ''}`}
+      style={{ background: color }}
+    >
+      {network === 'Free' ? '★ Free' : network}
     </span>
   )
 }
@@ -154,7 +157,8 @@ export default function Calendar() {
       ) : (
         <div className="tv-guide-list">
           <p className="tv-guide-note">
-            All times approximate Central Time · Networks subject to change
+            All times approximate Central Time · Apple TV+ required for Qualifying &amp; Race
+            · Practice sessions stream free (no subscription)
           </p>
           {gps.map((gp) => (
             <TvCard key={gp.id} gp={gp} />
