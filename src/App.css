@@ -1318,6 +1318,146 @@
   color: #4ade80;
 }
 
+/* ── Calendar Tabs ───────────────────────────────────── */
+.cal-tabs {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.cal-tab {
+  flex: 1;
+  padding: 0.45rem 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.cal-tab.active {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+/* ── TV Guide ────────────────────────────────────────── */
+.tv-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.tv-guide-note {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+.tv-gp-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tv-gp-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tv-gp-round {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.tv-gp-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tv-gp-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.tv-sessions {
+  display: flex;
+  flex-direction: column;
+}
+
+.tv-session-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.875rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tv-session-row:last-child {
+  border-bottom: none;
+}
+
+.tv-session-label {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.tv-session-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tv-session-time {
+  font-size: 0.72rem;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-network-badge {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.tv-no-data {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0.75rem;
+  margin: 0;
+}
+
 /* ── Results View ────────────────────────────────────── */
 .results-view {
   display: flex;
