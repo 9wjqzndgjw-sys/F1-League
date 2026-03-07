@@ -2520,10 +2520,11 @@
 }
 
 .msc-pick-bar {
-  width: 3px;
+  width: 5px;
   align-self: stretch;
   background: var(--team-color, #444);
   flex-shrink: 0;
+  border-radius: 0 2px 2px 0;
   box-shadow: 2px 0 8px var(--team-color, transparent);
 }
 
@@ -2539,6 +2540,7 @@
   color: var(--red);
   width: 1.8rem;
   text-align: center;
+  opacity: 0.6;
 }
 
 .msc-type-badge.con {

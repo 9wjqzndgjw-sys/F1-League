@@ -32,16 +32,16 @@ function PickRow({ pick, isScored, gridPos }) {
   return (
     <div className="msc-pick-row" style={{ '--team-color': color }}>
       <div className="msc-pick-bar" />
-      <span className={`msc-type-badge${type === 'constructor' ? ' con' : ''}`}>
-        {type === 'constructor' ? 'CON' : 'DRV'}
-      </span>
       <span className="msc-pick-code">{code}</span>
-      <span className="msc-pick-name">{name}</span>
       {gridPos != null && (
         <span className="msc-grid-pos" title="Starting grid position">P{gridPos}</span>
       )}
+      <span className="msc-pick-name">{name}</span>
       <span className={`msc-pick-pts${!isScored ? ' zero' : pts < 0 ? ' neg' : pts === 0 ? ' zero' : ''}`}>
         {isScored ? (pts > 0 ? `+${pts}` : pts) : '—'}
+      </span>
+      <span className={`msc-type-badge${type === 'constructor' ? ' con' : ''}`}>
+        {type === 'constructor' ? 'CON' : 'DRV'}
       </span>
     </div>
   )

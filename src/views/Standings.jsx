@@ -137,10 +137,10 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                     <div key={i} className="manager-gp-pick" style={{ '--pick-color': color }}>
                       <div className="pick-color-bar" />
                       <span className="pick-code">{code}</span>
-                      {team && <span className="pick-team">{team}</span>}
                       {gridPos != null && (
                         <span className="pick-grid" title="Starting grid position">P{gridPos}</span>
                       )}
+                      {team && <span className="pick-team">{team}</span>}
                       <span className="pick-pts">
                         {p.pts !== null ? (p.pts > 0 ? `+${p.pts}` : p.pts) : '—'}
                       </span>
