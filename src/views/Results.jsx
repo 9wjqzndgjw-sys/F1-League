@@ -26,7 +26,7 @@ function initials(name) {
 
 // ── Scores Tab ────────────────────────────────────────
 
-function ScoresTab({ picks, managers, drivers, constructors, results, settings, currentManagerId }) {
+function ScoresTab({ picks, managers, drivers, constructors, results, settings, currentManagerId, isScored, payoutFirst, payoutSecond }) {
   const raceScoring    = (settings?.scoring_race        ?? []).map(Number)
   const sprintScoring  = (settings?.scoring_sprint      ?? []).map(Number)
   const conScoring     = (settings?.scoring_constructor ?? []).map(Number)
@@ -44,7 +44,7 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
     return map
   }, [results])
 
-  const hasResults = results.length > 0
+  const hasResults = isScored
 
   const driverFantasyPts = useMemo(() => {
     if (!hasResults) return {}
@@ -104,19 +104,24 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
 
       const cardColor = picksWithPts[0]?.color ?? '#444'
 
+      const payout = hasResults
+        ? (total === managerData?.[0]?.total ? payoutFirst : total === managerData?.[1]?.total ? payoutSecond : 0)
+        : 0
+
       return {
         manager: m,
         picks: picksWithPts,
         total: hasResults ? total : null,
         cardColor,
         isMe: m.id === currentManagerId,
+        payout,
       }
     }).sort((a, b) => {
       if (a.total !== null && b.total !== null) return b.total - a.total
       return (a.manager.display_name ?? '').localeCompare(b.manager.display_name ?? '')
     })
   }, [picks, managers, drivers, constructors, driversById, constructorsById,
-      hasResults, driverFantasyPts, conPtsMap, currentManagerId])
+      hasResults, driverFantasyPts, conPtsMap, currentManagerId, payoutFirst, payoutSecond])
 
   if (!picks.length) {
     return <div className="no-session-results">No picks recorded for this round yet</div>
@@ -124,44 +129,52 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
 
   return (
     <div className="scores-list">
-      {managerData.map((md, idx) => (
-        <div
-          key={md.manager.id}
-          className={`manager-score-card${md.isMe ? ' me' : ''}`}
-          style={{ '--manager-color': md.isMe ? 'var(--teal)' : md.cardColor }}
-        >
-          <div className="manager-score-header">
-            <span className="manager-score-rank">{idx + 1}</span>
-            <span className="manager-score-initials">{initials(md.manager.display_name)}</span>
-            <span className="manager-score-name">{md.manager.display_name ?? '—'}</span>
-            <span className="manager-score-total">
-              {md.total !== null ? `${md.total} pts` : 'TBD'}
-            </span>
+      {managerData.map((md, idx) => {
+        const payout = idx === 0 ? payoutFirst : idx === 1 ? payoutSecond : 0
+        return (
+          <div
+            key={md.manager.id}
+            className={`manager-score-card${md.isMe ? ' me' : ''}`}
+            style={{ '--manager-color': md.isMe ? 'var(--teal)' : md.cardColor }}
+          >
+            <div className="manager-score-header">
+              <span className="manager-score-rank">{idx + 1}</span>
+              <span className="manager-score-initials">{initials(md.manager.display_name)}</span>
+              <span className="manager-score-name">{md.manager.display_name ?? '—'}</span>
+              {hasResults && payout > 0 && (
+                <span className="manager-score-payout">${payout}</span>
+              )}
+              <span className="manager-score-total">
+                {md.total !== null ? `${md.total} pts` : 'TBD'}
+              </span>
+            </div>
+            <div className="manager-pick-rows">
+              {md.picks.length === 0
+                ? <span className="manager-score-empty">No picks recorded</span>
+                : md.picks.map((p, i) => {
+                    const code = p.type === 'driver'
+                      ? (p.entity?.code ?? '—')
+                      : (p.entity?.short_name ?? '—')
+                    const name = p.entity?.name ?? '—'
+                    return (
+                      <div key={i} className="manager-pick-row" style={{ '--pick-color': p.color }}>
+                        <div className="pick-color-bar" />
+                        <span className={`pick-badge ${p.type ?? ''}`}>
+                          {p.type === 'driver' ? 'DRV' : 'CON'}
+                        </span>
+                        <span className="pick-code">{code}</span>
+                        <span className="pick-team">{name}</span>
+                        <span className="pick-pts">
+                          {p.pts !== null ? (p.pts > 0 ? `+${p.pts}` : p.pts) : '—'}
+                        </span>
+                      </div>
+                    )
+                  })
+              }
+            </div>
           </div>
-          <div className="manager-pick-rows">
-            {md.picks.map((p, i) => {
-              const code = p.type === 'driver'
-                ? (p.entity?.code ?? '—')
-                : (p.entity?.short_name ?? '—')
-              const teamName = p.type === 'constructor' ? (p.entity?.name ?? '') : null
-
-              return (
-                <div key={i} className="manager-pick-row" style={{ '--pick-color': p.color }}>
-                  <div className="pick-color-bar" />
-                  <span className={`pick-badge ${p.type ?? ''}`}>
-                    {p.type === 'driver' ? 'DRV' : 'CON'}
-                  </span>
-                  <span className="pick-code">{code}</span>
-                  {teamName && <span className="pick-team">{teamName}</span>}
-                  <span className="pick-pts">
-                    {p.pts !== null ? (p.pts > 0 ? `+${p.pts}` : p.pts) : '—'}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -321,6 +334,9 @@ export default function Results() {
           results={results}
           settings={settings}
           currentManagerId={currentManager?.id}
+          isScored={selectedGp?.status === 'scored'}
+          payoutFirst={settings?.payout_first ?? 8}
+          payoutSecond={settings?.payout_second ?? 2}
         />
 
       ) : (
