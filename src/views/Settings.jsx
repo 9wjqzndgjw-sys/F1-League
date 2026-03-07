@@ -58,7 +58,6 @@ export default function Settings() {
   const [draftOrderIds, setDraftOrderIds] = useState([])
   const [orderSaving, setOrderSaving] = useState(false)
   const [orderMsg, setOrderMsg] = useState('')
-  const [drivers, setDrivers] = useState([])
 
   useEffect(() => {
     if (!user) return
@@ -68,16 +67,14 @@ export default function Settings() {
       supabase.from('league_settings').select('*').eq('id', 1).single(),
       supabase.from('grand_prix').select('id,name,round_number,status').order('round_number'),
       supabase.from('managers').select('id, display_name').order('display_name'),
-      supabase.from('drivers').select('id, code, name').order('code'),
     ])
-      .then(([{ data: mgr }, { data: cfg }, { data: gpsData }, { data: mgrsData }, { data: drvsData }]) => {
+      .then(([{ data: mgr }, { data: cfg }, { data: gpsData }, { data: mgrsData }]) => {
         if (cancelled) return
         setManager(mgr)
         setDisplayName(mgr?.display_name ?? '')
         setSettings(cfg)
         setGps(gpsData ?? [])
         setAllManagers(mgrsData ?? [])
-        setDrivers(drvsData ?? [])
         setDraftOrderIds(cfg?.initial_draft_order ?? [])
         if (cfg) {
           setDraftRounds(cfg.draft_rounds ?? 3)
