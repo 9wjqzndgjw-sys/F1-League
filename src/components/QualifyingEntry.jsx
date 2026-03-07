@@ -35,7 +35,7 @@ export default function QualifyingEntry() {
     supabase
       .from('race_results')
       .select('driver_id, position')
-      .eq('gp_id', selectedGpId)
+      .eq('gp_id', Number(selectedGpId))
       .eq('session_type', sessionType)
       .order('position')
       .then(({ data }) => {
@@ -81,11 +81,13 @@ export default function QualifyingEntry() {
     setSaving(true)
     setMsg('')
 
+    const gpId = Number(selectedGpId)
+
     const rows = slots
       .map((driverId, i) => ({ driver_id: driverId, position: i + 1 }))
       .filter((r) => r.driver_id)
       .map((r) => ({
-        gp_id: selectedGpId,
+        gp_id: gpId,
         session_type: sessionType,
         driver_id: r.driver_id,
         position: r.position,
@@ -94,15 +96,24 @@ export default function QualifyingEntry() {
     const { error: delErr } = await supabase
       .from('race_results')
       .delete()
-      .eq('gp_id', selectedGpId)
+      .eq('gp_id', gpId)
       .eq('session_type', sessionType)
 
-    if (!delErr && rows.length) {
-      await supabase.from('race_results').insert(rows)
+    if (delErr) {
+      setSaving(false)
+      setMsg(`Error: ${delErr.message}`)
+      return
     }
 
-    setSaving(false)
-    setMsg(delErr ? 'Error saving.' : 'Saved!')
+    if (rows.length) {
+      const { error: insErr } = await supabase.from('race_results').insert(rows)
+      setSaving(false)
+      setMsg(insErr ? `Error: ${insErr.message}` : 'Saved!')
+    } else {
+      setSaving(false)
+      setMsg('Saved!')
+    }
+
     setTimeout(() => setMsg(''), 2500)
   }
 
