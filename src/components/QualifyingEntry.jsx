@@ -21,7 +21,7 @@ export default function QualifyingEntry() {
         .order('round_number'),
       supabase
         .from('drivers')
-        .select('id, code, full_name')
+        .select('id, code, full_name, number')
         .order('code'),
     ]).then(([{ data: gpsData }, { data: drvsData }]) => {
       setGps(gpsData ?? [])
@@ -59,11 +59,11 @@ export default function QualifyingEntry() {
     setMsg('')
     try {
       const grid = await fetchQualifyingGrid(raceDateStr, sessionType)
-      // Map name_acronym → driver ID using our drivers list
-      const codeToId = Object.fromEntries(drivers.map((d) => [d.code, d.id]))
+      // Map driver_number → driver ID using our drivers list
+      const numberToId = Object.fromEntries(drivers.map((d) => [d.number, d.id]))
       const next = Array(22).fill('')
-      for (const [acronym, position] of Object.entries(grid)) {
-        const driverId = codeToId[acronym]
+      for (const [driverNumber, position] of Object.entries(grid)) {
+        const driverId = numberToId[Number(driverNumber)]
         const i = position - 1
         if (driverId && i >= 0 && i < 22) next[i] = driverId
       }

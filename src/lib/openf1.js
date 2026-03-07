@@ -50,7 +50,8 @@ async function findSessionKey(raceDateStr, sessionType) {
 
 /**
  * Fetch the starting grid for a GP session.
- * Returns an object keyed by driver name_acronym (e.g. "VER") → grid position (1-based).
+ * Returns an object keyed by driver_number → grid position (1-based).
+ * Using driver_number avoids issues with duplicate acronyms (e.g. two BEA entries).
  *
  * @param {string} raceDateStr  - "YYYY-MM-DD" race date from our DB
  * @param {string} sessionType  - "qualifying" | "sprint_qualifying"
@@ -58,15 +59,7 @@ async function findSessionKey(raceDateStr, sessionType) {
 export async function fetchQualifyingGrid(raceDateStr, sessionType) {
   const sessionKey = await findSessionKey(raceDateStr, sessionType)
 
-  const [driverRows, positionRows] = await Promise.all([
-    get(`/drivers?session_key=${sessionKey}`),
-    get(`/position?session_key=${sessionKey}`),
-  ])
-
-  // driver_number → name_acronym
-  const numToAcronym = Object.fromEntries(
-    driverRows.map((d) => [d.driver_number, d.name_acronym])
-  )
+  const positionRows = await get(`/position?session_key=${sessionKey}`)
 
   // Take the latest position entry per driver (= final qualifying order)
   const latestByDriver = {}
@@ -77,12 +70,11 @@ export async function fetchQualifyingGrid(raceDateStr, sessionType) {
     }
   }
 
-  // Build { acronym → position }
+  // Build { driver_number → position }
   const grid = {}
   for (const [driverNum, entry] of Object.entries(latestByDriver)) {
-    const acronym = numToAcronym[driverNum]
-    if (acronym && entry.position != null) {
-      grid[acronym] = entry.position
+    if (entry.position != null) {
+      grid[Number(driverNum)] = entry.position
     }
   }
 
