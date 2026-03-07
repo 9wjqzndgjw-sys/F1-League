@@ -99,7 +99,7 @@ export default function QualifyingEntry({ drivers }) {
     setTimeout(() => setMsg(''), 2500)
   }
 
-  const selectedGp = gps.find((g) => g.id === selectedGpId)
+  const selectedGp = gps.find((g) => String(g.id) === selectedGpId)
 
   // Drivers already picked in other slots (to flag duplicates)
   const usedIds = new Set(slots.filter(Boolean))
