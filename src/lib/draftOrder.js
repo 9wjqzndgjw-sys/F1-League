@@ -12,7 +12,7 @@ export function getDraftOrder(baseOrder, gpIdx, numRounds) {
   return rounds.flatMap((order, roundIdx) =>
     order.map((managerId, pickIdx) => ({
       round: roundIdx + 1,
-      pick: roundIdx * 7 + pickIdx + 1,
+      pick: roundIdx * order.length + pickIdx + 1,
       managerId,
       type: roundIdx >= 2 ? 'any' : 'driver',
     }))

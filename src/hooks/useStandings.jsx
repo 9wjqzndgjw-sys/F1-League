@@ -164,6 +164,8 @@ export function useStandings() {
     standings: computed.standings,
     gpScores: computed.gpScores,
     managers: rawData?.managers ?? [],
+    drivers: rawData?.drivers ?? [],
+    constructors: rawData?.constructors ?? [],
     totalGps: 24,
   }
 }

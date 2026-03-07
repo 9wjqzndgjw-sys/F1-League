@@ -6,6 +6,7 @@ import Draft from './views/Draft'
 import Results from './views/Results'
 import Calendar from './views/Calendar'
 import Settings from './views/Settings'
+import Scoring from './views/Scoring'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import './App.css'
@@ -16,6 +17,7 @@ const VIEWS = {
   results: Results,
   calendar: Calendar,
   settings: Settings,
+  scoring: Scoring,
 }
 
 export default function App() {
