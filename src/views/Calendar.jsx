@@ -9,15 +9,20 @@ const STATUS_LABEL = {
   scored:   'Scored',
 }
 
+function parseLocalDate(dateStr) {
+  // Parse "YYYY-MM-DD" as local time, not UTC, to avoid off-by-one in US timezones
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return null
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return parseLocalDate(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function sessionDate(raceDateStr, dayOffset) {
   if (!raceDateStr) return ''
-  const d = new Date(raceDateStr)
+  const d = parseLocalDate(raceDateStr)
   d.setDate(d.getDate() + dayOffset)
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
