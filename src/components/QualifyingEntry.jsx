@@ -61,17 +61,15 @@ export default function QualifyingEntry() {
       const grid = await fetchQualifyingGrid(raceDateStr, sessionType)
       // Map driver_number → driver ID using our drivers list
       const numberToId = Object.fromEntries(drivers.map((d) => [d.number, d.id]))
-      console.log('numberToId', numberToId)
-      console.log('OpenF1 grid', grid)
       const next = Array(22).fill('')
       for (const [driverNumber, position] of Object.entries(grid)) {
         const driverId = numberToId[Number(driverNumber)]
         const i = position - 1
-        if (!driverId) console.warn(`No driver match for number ${driverNumber} (P${position})`)
         if (driverId && i >= 0 && i < 22) next[i] = driverId
       }
       setSlots(next)
-      setMsg('Imported from OpenF1 — review and save')
+      const filled = next.filter(Boolean).length
+      setMsg(`Imported ${filled}/22 from OpenF1 — fill blanks manually, then save`)
     } catch (err) {
       setMsg(`OpenF1: ${err.message}`)
     } finally {
