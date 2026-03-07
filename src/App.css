@@ -2639,6 +2639,56 @@
   min-width: 0;
 }
 
+.manager-name-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-name-input {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  color: var(--text);
+  padding: 0.1rem 0.25rem;
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+
+.manager-name-input:focus {
+  border-bottom-color: var(--teal);
+}
+
+.manager-name-save {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  background: var(--teal);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.manager-name-save:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.manager-name-msg {
+  font-size: 0.75rem;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+
 .manager-detail-name {
   font-family: var(--font-heading);
   font-weight: 700;

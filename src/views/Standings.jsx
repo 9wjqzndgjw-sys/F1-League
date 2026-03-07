@@ -91,13 +91,45 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
   const isMe = manager.id === user?.id
   const name = manager.display_name ?? manager.name ?? '—'
 
+  const [editName, setEditName]   = useState(name)
+  const [nameSaving, setNameSaving] = useState(false)
+  const [nameMsg, setNameMsg]     = useState('')
+
+  async function saveName() {
+    const trimmed = editName.trim()
+    if (!trimmed || trimmed === name) return
+    setNameSaving(true)
+    const { error } = await supabase.from('managers').update({ display_name: trimmed }).eq('id', manager.id)
+    setNameSaving(false)
+    setNameMsg(error ? 'Error saving' : 'Saved!')
+    setTimeout(() => setNameMsg(''), 2000)
+  }
+
   return (
     <div className="manager-detail">
       <div className="manager-detail-header">
         <button className="back-btn" onClick={onBack}>← Back</button>
         <div className="manager-detail-title">
-          <span className="manager-detail-name">{name}</span>
-          {isMe && <span className="me-tag">you</span>}
+          {isMe ? (
+            <div className="manager-name-edit">
+              <input
+                className="manager-name-input"
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveName()}
+              />
+              <button
+                className="manager-name-save"
+                onClick={saveName}
+                disabled={nameSaving || editName.trim() === name || !editName.trim()}
+              >
+                {nameSaving ? '…' : 'Save'}
+              </button>
+              {nameMsg && <span className="manager-name-msg">{nameMsg}</span>}
+            </div>
+          ) : (
+            <span className="manager-detail-name">{name}</span>
+          )}
         </div>
       </div>
 
