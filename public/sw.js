@@ -31,8 +31,8 @@ self.addEventListener('fetch', event => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Never intercept Supabase traffic
-  if (url.hostname.includes('supabase.co')) return
+  // Never intercept Supabase or cross-origin traffic
+  if (url.origin !== self.location.origin) return
 
   // Navigation: cache-first so the shell loads instantly, revalidate in background
   if (request.mode === 'navigate') {
@@ -57,7 +57,7 @@ self.addEventListener('fetch', event => {
       if (cached) return cached
       return fetch(request).then(response => {
         // Only cache successful same-origin responses
-        if (response.ok && url.origin === self.location.origin) {
+        if (response.ok && request.method === 'GET' && url.origin === self.location.origin) {
           const clone = response.clone()
           caches.open(CACHE).then(cache => cache.put(request, clone))
         }
