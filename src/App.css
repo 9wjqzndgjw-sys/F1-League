@@ -987,49 +987,10 @@
   padding: 1rem 1.125rem;
   transition: border-color 0.15s;
   box-shadow: var(--shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-/* P1 gold left accent */
-.standings-row:nth-child(1) {
-  border-color: rgba(240, 180, 41, 0.25);
-}
-
-.standings-row:nth-child(1)::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--gold);
-  box-shadow: 2px 0 12px rgba(240, 180, 41, 0.5);
-}
-
-.standings-row:nth-child(2)::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #b0b0b8;
-}
-
-.standings-row:nth-child(3)::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #cd7f32;
 }
 
 .standings-row.me {
   border-color: rgba(0, 210, 190, 0.3);
-  background: rgba(0, 210, 190, 0.03);
 }
 
 .rank-badge {
