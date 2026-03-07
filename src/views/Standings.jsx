@@ -20,22 +20,33 @@ function EmptyScores() {
 function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack }) {
   const [draftedPicks, setDraftedPicks] = useState([])
   const [draftedGps, setDraftedGps] = useState([])
+  const [gridData, setGridData] = useState({}) // gp_id → { qualifying: {driverId: pos}, sprint_qualifying: {...} }
   const [loading, setLoading] = useState(true)
 
   const driversById      = useMemo(() => Object.fromEntries(drivers.map(d => [d.id, d])), [drivers])
   const constructorsById = useMemo(() => Object.fromEntries(constructors.map(c => [c.id, c])), [constructors])
 
-  // Load picks for non-scored GPs (drafted/drafting)
+  // Load picks for non-scored GPs + qualifying grid data for all GPs
   useEffect(() => {
     let cancelled = false
     Promise.all([
       supabase.from('grand_prix').select('id,name,round_number,status,has_sprint')
         .in('status', ['drafting', 'drafted']).order('round_number'),
       supabase.from('draft_picks').select('*').eq('manager_id', manager.id),
-    ]).then(([{ data: gpsData }, { data: picksData }]) => {
+      supabase.from('race_results').select('gp_id,driver_id,session_type,position')
+        .in('session_type', ['qualifying', 'sprint_qualifying']),
+    ]).then(([{ data: gpsData }, { data: picksData }, { data: qualData }]) => {
       if (cancelled) return
       setDraftedGps(gpsData ?? [])
       setDraftedPicks(picksData ?? [])
+      // Index qualifying data: gp_id → session_type → driver_id → position
+      const grid = {}
+      for (const r of qualData ?? []) {
+        if (!grid[r.gp_id]) grid[r.gp_id] = {}
+        if (!grid[r.gp_id][r.session_type]) grid[r.gp_id][r.session_type] = {}
+        grid[r.gp_id][r.session_type][r.driver_id] = r.position
+      }
+      setGridData(grid)
       setLoading(false)
     })
     return () => { cancelled = true }
@@ -118,6 +129,10 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                     ? (p.entity?.constructor?.short_name ?? '')
                     : ''
 
+                  const gridPos = p.type === 'driver' && p.entity?.id
+                    ? gridData[gp.id]?.qualifying?.[p.entity.id]
+                    : null
+
                   return (
                     <div key={i} className="manager-gp-pick" style={{ '--pick-color': color }}>
                       <div className="pick-color-bar" />
@@ -126,6 +141,9 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                       </span>
                       <span className="pick-code">{code}</span>
                       {team && <span className="pick-team">{team}</span>}
+                      {gridPos != null && (
+                        <span className="pick-grid" title="Starting grid position">P{gridPos}</span>
+                      )}
                       <span className="pick-pts">
                         {p.pts !== null ? (p.pts > 0 ? `+${p.pts}` : p.pts) : '—'}
                       </span>

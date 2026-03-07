@@ -1604,6 +1604,17 @@
   color: #f87171;
 }
 
+.result-grid {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  background: var(--border);
+  border-radius: 4px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* ── Settings View ───────────────────────────────────── */
 .settings-view {
   display: flex;
@@ -1733,6 +1744,83 @@
   font-size: 0.8125rem;
   color: var(--green);
   font-weight: 500;
+}
+
+.settings-select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Qualifying Entry ────────────────────────────────── */
+.qual-session-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.qual-session-btn {
+  flex: 1;
+  padding: 0.5rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-sub);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.qual-session-btn.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #000;
+  font-weight: 600;
+}
+
+.qual-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.qual-slot-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.qual-pos {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 2rem;
+  flex-shrink: 0;
+}
+
+.qual-driver-select {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.qual-driver-select.dupe {
+  border-color: var(--red);
 }
 
 /* ── Sign Out ────────────────────────────────────────── */
@@ -2320,6 +2408,18 @@
   flex-shrink: 0;
 }
 
+.pick-grid {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--border);
+  border-radius: 4px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
 /* ── msc-* aliases used by ManagerScoreCard / PickRow ── */
 
 .msc-header {
@@ -2407,8 +2507,8 @@
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   flex-shrink: 0;
-  background: var(--teal-dim);
-  color: var(--teal);
+  background: rgba(225, 6, 0, 0.15);
+  color: var(--red);
   width: 1.8rem;
   text-align: center;
 }
@@ -2448,6 +2548,18 @@
 
 .msc-pick-pts.neg {
   color: var(--red);
+}
+
+.msc-grid-pos {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--border);
+  border-radius: 4px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
 }
 
 /* ── Manager Detail ──────────────────────────────────── */
