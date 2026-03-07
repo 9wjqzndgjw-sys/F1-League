@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { fetchQualifyingGrid } from '../lib/openf1'
 
 export default function QualifyingEntry({ drivers }) {
   const [gps, setGps] = useState([])
@@ -7,12 +8,13 @@ export default function QualifyingEntry({ drivers }) {
   const [sessionType, setSessionType] = useState('qualifying')
   const [slots, setSlots] = useState(Array(22).fill(''))
   const [saving, setSaving] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [msg, setMsg] = useState('')
 
   useEffect(() => {
     supabase
       .from('grand_prix')
-      .select('id, name, round_number, has_sprint')
+      .select('id, name, round_number, has_sprint, race_date, date')
       .in('status', ['drafted', 'scored'])
       .order('round_number')
       .then(({ data }) => setGps(data ?? []))
@@ -37,6 +39,33 @@ export default function QualifyingEntry({ drivers }) {
         setSlots(next)
       })
   }, [selectedGpId, sessionType])
+
+  async function importFromOpenF1() {
+    const raceDateStr = selectedGp?.race_date ?? selectedGp?.date
+    if (!raceDateStr) {
+      setMsg('No race date on this GP — cannot match OpenF1 session')
+      return
+    }
+    setImporting(true)
+    setMsg('')
+    try {
+      const grid = await fetchQualifyingGrid(raceDateStr, sessionType)
+      // Map name_acronym → driver ID using our drivers list
+      const codeToId = Object.fromEntries(drivers.map((d) => [d.code, d.id]))
+      const next = Array(22).fill('')
+      for (const [acronym, position] of Object.entries(grid)) {
+        const driverId = codeToId[acronym]
+        const i = position - 1
+        if (driverId && i >= 0 && i < 22) next[i] = driverId
+      }
+      setSlots(next)
+      setMsg('Imported from OpenF1 — review and save')
+    } catch (err) {
+      setMsg(`OpenF1: ${err.message}`)
+    } finally {
+      setImporting(false)
+    }
+  }
 
   async function save() {
     if (!selectedGpId) return
@@ -106,6 +135,16 @@ export default function QualifyingEntry({ drivers }) {
               </button>
             )}
           </div>
+        )}
+
+        {selectedGpId && (
+          <button
+            className="qual-openf1-btn"
+            onClick={importFromOpenF1}
+            disabled={importing || saving}
+          >
+            {importing ? 'Fetching…' : 'Import from OpenF1'}
+          </button>
         )}
 
         {selectedGpId && (

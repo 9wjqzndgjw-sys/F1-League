@@ -1823,6 +1823,30 @@
   border-color: var(--red);
 }
 
+.qual-openf1-btn {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--teal);
+  border-radius: var(--r-sm);
+  color: var(--teal);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.qual-openf1-btn:hover:not(:disabled) {
+  background: rgba(0, 210, 190, 0.08);
+}
+
+.qual-openf1-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ── Sign Out ────────────────────────────────────────── */
 .signout-full-btn {
   width: 100%;
