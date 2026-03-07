@@ -136,9 +136,6 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                   return (
                     <div key={i} className="manager-gp-pick" style={{ '--pick-color': color }}>
                       <div className="pick-color-bar" />
-                      <span className={`pick-badge ${p.type ?? ''}`}>
-                        {p.type === 'driver' ? 'DRV' : 'CON'}
-                      </span>
                       <span className="pick-code">{code}</span>
                       {team && <span className="pick-team">{team}</span>}
                       {gridPos != null && (
@@ -146,6 +143,9 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                       )}
                       <span className="pick-pts">
                         {p.pts !== null ? (p.pts > 0 ? `+${p.pts}` : p.pts) : '—'}
+                      </span>
+                      <span className={`pick-badge ${p.type ?? ''}`}>
+                        {p.type === 'driver' ? 'DRV' : 'CON'}
                       </span>
                     </div>
                   )
