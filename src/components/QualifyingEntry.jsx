@@ -15,7 +15,7 @@ export default function QualifyingEntry({ drivers }) {
     supabase
       .from('grand_prix')
       .select('id, name, round_number, has_sprint, race_date, date')
-      .in('status', ['drafted', 'scored'])
+      .in('status', ['drafting', 'drafted', 'scored'])
       .order('round_number')
       .then(({ data }) => setGps(data ?? []))
   }, [])
