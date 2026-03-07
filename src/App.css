@@ -2449,3 +2449,136 @@
 .msc-pick-pts.neg {
   color: var(--red);
 }
+
+/* ── Manager Detail ──────────────────────────────────── */
+.manager-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.manager-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-sub);
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.back-btn:hover {
+  border-color: var(--text-sub);
+  color: var(--text);
+}
+
+.manager-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-detail-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager-gp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.manager-gp-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.manager-gp-card.scored {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+.manager-gp-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.manager-gp-round {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.manager-gp-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager-gp-total {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--text-sub);
+  flex-shrink: 0;
+}
+
+.manager-gp-payout {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.manager-gp-picks {
+  display: flex;
+  flex-direction: column;
+}
+
+.manager-gp-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.manager-gp-pick:last-child {
+  border-bottom: none;
+}
+
+.standings-chevron {
+  font-size: 1rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: auto;
+}
