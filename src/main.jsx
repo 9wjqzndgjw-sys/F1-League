@@ -7,9 +7,10 @@ import App from './App.jsx'
 
 inject()
 
+// Unregister any existing service workers — SW caching causes stale-build issues
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(r => r.unregister())
   })
 }
 
