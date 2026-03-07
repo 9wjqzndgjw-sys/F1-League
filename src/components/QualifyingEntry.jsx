@@ -14,10 +14,12 @@ export default function QualifyingEntry({ drivers }) {
   useEffect(() => {
     supabase
       .from('grand_prix')
-      .select('id, name, round_number, has_sprint, race_date, date')
+      .select('id, name, round_number, has_sprint, race_date')
       .in('status', ['drafting', 'drafted', 'scored'])
       .order('round_number')
-      .then(({ data }) => setGps(data ?? []))
+      .then(({ data, error }) => {
+        if (!error) setGps(data ?? [])
+      })
   }, [])
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function QualifyingEntry({ drivers }) {
   }, [selectedGpId, sessionType])
 
   async function importFromOpenF1() {
-    const raceDateStr = selectedGp?.race_date ?? selectedGp?.date
+    const raceDateStr = selectedGp?.race_date
     if (!raceDateStr) {
       setMsg('No race date on this GP — cannot match OpenF1 session')
       return
