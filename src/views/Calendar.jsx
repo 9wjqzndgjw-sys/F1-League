@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { getSessionSchedule } from '../lib/schedule'
+import { getTvData } from '../lib/tvSchedule'
 
 const STATUS_LABEL = {
   upcoming: 'Upcoming',
   drafting: 'Draft Open',
-  drafted: 'Drafted',
-  scored: 'Scored',
+  drafted:  'Drafted',
+  scored:   'Scored',
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return null
   const d = new Date(dateStr)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function sessionDate(raceDateStr, dayOffset) {
+  if (!raceDateStr) return ''
+  const d = new Date(raceDateStr)
+  d.setDate(d.getDate() + dayOffset)
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 function StatusPill({ status }) {
@@ -23,66 +30,41 @@ function StatusPill({ status }) {
   )
 }
 
-function ScheduleTab({ gps, featured }) {
+function NetworkBadge({ network }) {
+  const cls = network === 'Free' ? 'free' : 'appletv'
   return (
-    <div className="calendar-list">
-      {gps.map((gp) => (
-        <div
-          key={gp.id}
-          className={`gp-card ${gp.status}${gp.id === featured?.id ? ' featured' : ''}`}
-        >
-          <span className="gp-round-badge">R{String(gp.round_number).padStart(2, '0')}</span>
-          <div className="gp-info">
-            <div className="gp-card-name-row">
-              <span className="gp-card-name">{gp.name}</span>
-              {gp.has_sprint && <span className="gp-sprint-badge">Sprint</span>}
-            </div>
-            {(gp.race_date ?? gp.date) && (
-              <span className="gp-card-date">{formatDate(gp.race_date ?? gp.date)}</span>
-            )}
-          </div>
-          <StatusPill status={gp.status} />
-        </div>
-      ))}
-    </div>
+    <span className={`tv-broadcast-badge ${cls}`}>
+      {network === 'Free' ? '★ Free' : 'Apple TV+'}
+    </span>
   )
 }
 
-function TvGuideTab({ gps }) {
+function TvCard({ gp }) {
+  const tv = getTvData(gp.name)
+  const raceDate = gp.race_date ?? gp.date
+
   return (
-    <div className="tv-guide">
-      <p className="tv-disclaimer">
-        All times approximate Central Time · Apple TV+ required for Qualifying &amp; Race · Practice sessions stream free (no subscription)
-      </p>
-      {gps.map((gp) => {
-        const sessions = getSessionSchedule(gp.round_number)
-        const raceDate = formatDate(gp.race_date ?? gp.date)
-        return (
-          <div key={gp.id} className="tv-gp-card">
-            <div className="tv-gp-header">
-              <span className="tv-round-badge">R{String(gp.round_number).padStart(2, '0')}</span>
-              <span className="tv-gp-name">{gp.name}</span>
-              {raceDate && <span className="tv-gp-date">{raceDate}</span>}
+    <div className="tv-gp-card">
+      <div className="tv-gp-header">
+        <span className="tv-round-badge">R{String(gp.round_number).padStart(2, '0')}</span>
+        <span className="tv-gp-name">{gp.name}</span>
+        {raceDate && <span className="tv-gp-date">{formatDate(raceDate)}</span>}
+      </div>
+
+      {tv ? (
+        <div className="tv-sessions">
+          {tv.sessions.map((s) => (
+            <div key={s.label} className="tv-session-row">
+              <span className="tv-session-name">{s.label}</span>
+              <span className="tv-session-day">{sessionDate(raceDate, s.dayOffset)}</span>
+              <span className="tv-session-time">{s.time} CT</span>
+              <NetworkBadge network={s.network} />
             </div>
-            {sessions === null || sessions.length === 0 ? (
-              <p className="tv-tba">Broadcast times TBA</p>
-            ) : (
-              <div className="tv-sessions">
-                {sessions.map((s, i) => (
-                  <div key={i} className="tv-session-row">
-                    <span className="tv-session-name">{s.name}</span>
-                    <span className="tv-session-day">{s.day}</span>
-                    <span className="tv-session-time">{s.time}</span>
-                    <span className={`tv-broadcast-badge ${s.broadcast}`}>
-                      {s.broadcast === 'free' ? '★ Free' : 'Apple TV+'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
+          ))}
+        </div>
+      ) : (
+        <p className="tv-tba">Broadcast times TBA</p>
+      )}
     </div>
   )
 }
@@ -106,11 +88,11 @@ export default function Calendar() {
   }, [])
 
   if (loading) return <div className="view-loading">Loading calendar…</div>
-  if (error) return <div className="view-loading">Error: {error}</div>
+  if (error)   return <div className="view-loading">Error: {error}</div>
 
-  const activeGp = gps.find((g) => g.status === 'drafting')
-  const nextGp = gps.find((g) => g.status === 'upcoming')
-  const featured = activeGp ?? nextGp
+  const activeGp    = gps.find((g) => g.status === 'drafting')
+  const nextGp      = gps.find((g) => g.status === 'upcoming')
+  const featured    = activeGp ?? nextGp
   const scoredCount = gps.filter((g) => g.status === 'scored').length
 
   return (
@@ -150,10 +132,37 @@ export default function Calendar() {
         </button>
       </div>
 
-      {tab === 'schedule'
-        ? <ScheduleTab gps={gps} featured={featured} />
-        : <TvGuideTab gps={gps} />
-      }
+      {tab === 'schedule' ? (
+        <div className="calendar-list">
+          {gps.map((gp) => (
+            <div
+              key={gp.id}
+              className={`gp-card ${gp.status}${gp.id === featured?.id ? ' featured' : ''}`}
+            >
+              <span className="gp-round-badge">R{String(gp.round_number).padStart(2, '0')}</span>
+              <div className="gp-info">
+                <div className="gp-card-name-row">
+                  <span className="gp-card-name">{gp.name}</span>
+                  {gp.has_sprint && <span className="gp-sprint-badge">Sprint</span>}
+                </div>
+                {(gp.race_date ?? gp.date) && (
+                  <span className="gp-card-date">{formatDate(gp.race_date ?? gp.date)}</span>
+                )}
+              </div>
+              <StatusPill status={gp.status} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="tv-guide">
+          <p className="tv-disclaimer">
+            All times approximate Central Time · Apple TV+ required for Qualifying &amp; Race · Practice sessions stream free
+          </p>
+          {gps.map((gp) => (
+            <TvCard key={gp.id} gp={gp} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
