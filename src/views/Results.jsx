@@ -270,6 +270,7 @@ export default function Results() {
   }, [results])
 
   const selectedGp = gps.find((g) => g.id === selectedId)
+  const liveGp     = gps.find((g) => g.status === 'drafted')
 
   // ── Render ────────────────────────────────────────────
 
@@ -301,6 +302,20 @@ export default function Results() {
           </button>
         ))}
       </div>
+
+      {/* In-progress GP banner */}
+      {liveGp && (
+        <button
+          className="live-gp-banner"
+          onClick={() => { setSelectedId(liveGp.id); setSession('scores') }}
+        >
+          <span className="live-dot" />
+          <span className="live-gp-label">
+            R{String(liveGp.round_number).padStart(2, '0')} {liveGp.name} — in progress
+          </span>
+          <span className="live-gp-cta">View Scores ›</span>
+        </button>
+      )}
 
       <div className="results-gp-title">
         <span className="results-gp-round">Round {selectedGp?.round_number}</span>

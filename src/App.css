@@ -1475,6 +1475,53 @@
   color: var(--text);
 }
 
+.live-gp-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: rgba(225, 6, 0, 0.07);
+  border: 1px solid rgba(225, 6, 0, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.live-gp-banner:hover {
+  background: rgba(225, 6, 0, 0.12);
+  border-color: rgba(225, 6, 0, 0.4);
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+.live-gp-label {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.live-gp-cta {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
 /* ── GP Title ────────────────────────────────────────── */
 .results-gp-title {
   display: flex;
