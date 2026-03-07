@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth.jsx'
 import { calcDriverScore, calcConstructorScores } from '../lib/scoring'
 
 function posLabel(r) {
@@ -23,85 +24,17 @@ function initials(name) {
   return name.slice(0, 2).toUpperCase()
 }
 
-// ── Race Results Tab ──────────────────────────────────
-
-function RaceTab({ sessionRows, resultsLoading, session, hasSprint, setSession, driversById, calcPts }) {
-  return (
-    <>
-      {hasSprint && (
-        <div className="standings-tabs">
-          <button
-            className={`standings-tab${session === 'race' ? ' active' : ''}`}
-            onClick={() => setSession('race')}
-          >
-            Race
-          </button>
-          <button
-            className={`standings-tab${session === 'sprint' ? ' active' : ''}`}
-            onClick={() => setSession('sprint')}
-          >
-            Sprint
-          </button>
-        </div>
-      )}
-
-      {resultsLoading && <div className="results-loading">Loading…</div>}
-
-      {!resultsLoading && sessionRows.length === 0 && (
-        <div className="no-session-results">
-          No {session} results entered for this round yet
-        </div>
-      )}
-
-      {!resultsLoading && sessionRows.length > 0 && (
-        <div className="results-list">
-          {sessionRows.map((r) => {
-            const driver = driversById[r.driver_id]
-            const pts = calcPts(r, session)
-            const label = posLabel(r)
-            const isOut = r.is_dnf || r.is_dns || r.is_dsq
-            const teamColor = driver?.constructor?.color ?? '#555'
-
-            return (
-              <div
-                key={r.id ?? r.driver_id}
-                className={`result-row${isOut ? ' out' : ''}`}
-                style={{ '--team-color': teamColor }}
-              >
-                <span className={`result-pos${isOut ? ' pos-out' : ''}`}>{label}</span>
-                <div className="result-color-bar" />
-                <div className="result-driver">
-                  <span className="result-code">{driver?.code ?? '—'}</span>
-                  <span className="result-name">{driver?.name ?? '—'}</span>
-                </div>
-                <span className="result-team">
-                  {driver?.constructor?.short_name ?? ''}
-                </span>
-                <span className={`result-pts${pts < 0 ? ' pts-neg' : pts === 0 ? ' pts-zero' : ''}`}>
-                  {pts > 0 ? `+${pts}` : pts}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </>
-  )
-}
-
 // ── Scores Tab ────────────────────────────────────────
 
-function ScoresTab({ picks, managers, drivers, constructors, results, settings, userId }) {
-  const raceScoring    = (settings?.scoring_race ?? []).map(Number)
-  const sprintScoring  = (settings?.scoring_sprint ?? []).map(Number)
+function ScoresTab({ picks, managers, drivers, constructors, results, settings, currentManagerId }) {
+  const raceScoring    = (settings?.scoring_race        ?? []).map(Number)
+  const sprintScoring  = (settings?.scoring_sprint      ?? []).map(Number)
   const conScoring     = (settings?.scoring_constructor ?? []).map(Number)
-  const dnfPenalty     = Number(settings?.dnf_penalty ?? 0)
+  const dnfPenalty     = Number(settings?.dnf_penalty   ?? 0)
 
   const driversById      = useMemo(() => Object.fromEntries(drivers.map(d => [d.id, d])), [drivers])
   const constructorsById = useMemo(() => Object.fromEntries(constructors.map(c => [c.id, c])), [constructors])
-  const managersById     = useMemo(() => Object.fromEntries(managers.map(m => [m.id, m])), [managers])
 
-  // Index results by driver_id → session_type
   const resultMap = useMemo(() => {
     const map = {}
     for (const r of results) {
@@ -113,7 +46,6 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
 
   const hasResults = results.length > 0
 
-  // Driver fantasy pts (for constructor scoring)
   const driverFantasyPts = useMemo(() => {
     if (!hasResults) return {}
     return Object.fromEntries(
@@ -138,7 +70,6 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
     return Object.fromEntries(list.map(cs => [cs.constructorId, cs.constructorPoints]))
   }, [hasResults, drivers, constructors, driverFantasyPts, conScoring])
 
-  // Group picks by manager, calculate totals
   const managerData = useMemo(() => {
     const byManager = {}
     for (const pick of picks) {
@@ -171,7 +102,6 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
         return { ...p, type, entity, color, pts }
       })
 
-      // Manager card color = first pick's team color
       const cardColor = picksWithPts[0]?.color ?? '#444'
 
       return {
@@ -179,18 +109,17 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
         picks: picksWithPts,
         total: hasResults ? total : null,
         cardColor,
-        isMe: m.id === userId,
+        isMe: m.id === currentManagerId,
       }
     }).sort((a, b) => {
       if (a.total !== null && b.total !== null) return b.total - a.total
       return (a.manager.display_name ?? '').localeCompare(b.manager.display_name ?? '')
     })
-  }, [picks, managers, drivers, constructors, driversById, constructorsById, hasResults, driverFantasyPts, conPtsMap, userId])
+  }, [picks, managers, drivers, constructors, driversById, constructorsById,
+      hasResults, driverFantasyPts, conPtsMap, currentManagerId])
 
   if (!picks.length) {
-    return (
-      <div className="no-session-results">No picks recorded for this round yet</div>
-    )
+    return <div className="no-session-results">No picks recorded for this round yet</div>
   }
 
   return (
@@ -240,66 +169,71 @@ function ScoresTab({ picks, managers, drivers, constructors, results, settings, 
 // ── Main View ─────────────────────────────────────────
 
 export default function Results() {
-  const [gps, setGps] = useState([])
+  const { manager: currentManager } = useAuth()
+
+  const [gps, setGps]               = useState([])
   const [selectedId, setSelectedId] = useState(null)
-  const [results, setResults] = useState([])
-  const [picks, setPicks] = useState([])
-  const [drivers, setDrivers] = useState([])
+  const [results, setResults]       = useState([])
+  const [picks, setPicks]           = useState([])
+  const [drivers, setDrivers]       = useState([])
   const [constructors, setConstructors] = useState([])
-  const [managers, setManagers] = useState([])
-  const [settings, setSettings] = useState(null)
-  const [session, setSession] = useState('race')
-  const [mainTab, setMainTab] = useState('race')
-  const [loading, setLoading] = useState(true)
+  const [managers, setManagers]     = useState([])
+  const [settings, setSettings]     = useState(null)
+  const [session, setSession]       = useState('race') // 'race' | 'sprint' | 'scores'
+  const [loading, setLoading]       = useState(true)
   const [resultsLoading, setResultsLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [userId, setUserId] = useState(null)
+  const [error, setError]           = useState(null)
 
   // Initial load
   useEffect(() => {
+    let cancelled = false
     Promise.all([
       supabase.from('grand_prix').select('*').in('status', ['drafted', 'scored']).order('round_number', { ascending: false }),
       supabase.from('drivers').select('*, constructor:constructors(id,name,short_name,color)'),
       supabase.from('constructors').select('*'),
       supabase.from('managers').select('*'),
       supabase.from('league_settings').select('*').eq('id', 1).single(),
-      supabase.auth.getUser(),
     ]).then(([
-      { data: gpsData, error: gpsErr },
+      { data: gpsData,  error: gpsErr  },
       { data: drvsData, error: drvsErr },
-      { data: consData, error: consErr },
-      { data: mgrsData, error: mgrsErr },
-      { data: cfg, error: cfgErr },
-      { data: { user } },
+      { data: consData },
+      { data: mgrsData },
+      { data: cfg      },
     ]) => {
-      if (gpsErr || drvsErr || consErr || mgrsErr || cfgErr) {
-        setError((gpsErr ?? drvsErr ?? consErr ?? mgrsErr ?? cfgErr).message)
+      if (cancelled) return
+      if (gpsErr || drvsErr) {
+        setError((gpsErr ?? drvsErr).message)
       } else {
         setGps(gpsData ?? [])
         setDrivers(drvsData ?? [])
         setConstructors(consData ?? [])
         setManagers(mgrsData ?? [])
         setSettings(cfg)
-        setUserId(user?.id ?? null)
         if (gpsData?.length) setSelectedId(gpsData[0].id)
       }
-      setLoading(false)
     })
+    .catch((err) => { if (!cancelled) setError(err.message ?? 'Failed to load') })
+    .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [])
 
   // Load results + picks when selected GP changes
   useEffect(() => {
     if (!selectedId) return
+    let cancelled = false
     setResultsLoading(true)
     Promise.all([
       supabase.from('race_results').select('*').eq('gp_id', selectedId),
       supabase.from('draft_picks').select('*').eq('gp_id', selectedId),
     ]).then(([{ data: resData }, { data: picksData }]) => {
+      if (cancelled) return
       setResults(resData ?? [])
       setPicks(picksData ?? [])
       setSession('race')
-      setResultsLoading(false)
     })
+    .catch(() => {})
+    .finally(() => { if (!cancelled) setResultsLoading(false) })
+    return () => { cancelled = true }
   }, [selectedId])
 
   const driversById = useMemo(
@@ -308,18 +242,19 @@ export default function Results() {
   )
 
   const selectedGp = gps.find((g) => g.id === selectedId)
-  const hasSprint = selectedGp?.has_sprint ?? results.some((r) => r.session_type === 'sprint')
+  const hasSprint  = results.some((r) => r.session_type === 'sprint')
 
   const sessionRows = useMemo(
     () => sortResults(results.filter((r) => r.session_type === session)),
     [results, session]
   )
 
-  const calcPts = (r, sessionType) =>
-    calcDriverScore(r, sessionType)
+  const raceScoring   = (settings?.scoring_race        ?? []).map(Number)
+  const sprintScoring = (settings?.scoring_sprint      ?? []).map(Number)
+  const dnfPenalty    = Number(settings?.dnf_penalty   ?? 0)
 
   if (loading) return <div className="view-loading">Loading results…</div>
-  if (error) return <div className="view-loading">Error: {error}</div>
+  if (error)   return <div className="view-loading">Error: {error}</div>
 
   if (!gps.length) {
     return (
@@ -351,34 +286,33 @@ export default function Results() {
         <span className="results-gp-name">{selectedGp?.name}</span>
       </div>
 
-      <div className="standings-tabs">
+      <div className="results-tabs">
         <button
-          className={`standings-tab${mainTab === 'race' ? ' active' : ''}`}
-          onClick={() => setMainTab('race')}
+          className={`results-tab${session === 'race' ? ' active' : ''}`}
+          onClick={() => setSession('race')}
         >
           Race
         </button>
+        {hasSprint && (
+          <button
+            className={`results-tab${session === 'sprint' ? ' active' : ''}`}
+            onClick={() => setSession('sprint')}
+          >
+            Sprint
+          </button>
+        )}
         <button
-          className={`standings-tab${mainTab === 'scores' ? ' active' : ''}`}
-          onClick={() => setMainTab('scores')}
+          className={`results-tab${session === 'scores' ? ' active' : ''}`}
+          onClick={() => setSession('scores')}
         >
           Scores
         </button>
       </div>
 
-      {mainTab === 'race' && (
-        <RaceTab
-          sessionRows={sessionRows}
-          resultsLoading={resultsLoading}
-          session={session}
-          hasSprint={hasSprint}
-          setSession={setSession}
-          driversById={driversById}
-          calcPts={calcPts}
-        />
-      )}
+      {resultsLoading ? (
+        <div className="results-loading">Loading…</div>
 
-      {mainTab === 'scores' && (
+      ) : session === 'scores' ? (
         <ScoresTab
           picks={picks}
           managers={managers}
@@ -386,8 +320,47 @@ export default function Results() {
           constructors={constructors}
           results={results}
           settings={settings}
-          userId={userId}
+          currentManagerId={currentManager?.id}
         />
+
+      ) : (
+        <>
+          {sessionRows.length === 0 && (
+            <div className="no-session-results">
+              No {session} results entered for this round yet
+            </div>
+          )}
+          {sessionRows.length > 0 && (
+            <div className="results-list">
+              {sessionRows.map((r) => {
+                const driver    = driversById[r.driver_id]
+                const pts       = calcDriverScore(r, session, raceScoring, sprintScoring, dnfPenalty)
+                const label     = posLabel(r)
+                const isOut     = r.is_dnf || r.is_dns || r.is_dsq
+                const teamColor = driver?.constructor?.color ?? '#555'
+
+                return (
+                  <div
+                    key={r.id ?? r.driver_id}
+                    className={`result-row${isOut ? ' out' : ''}`}
+                    style={{ '--team-color': teamColor }}
+                  >
+                    <span className={`result-pos${isOut ? ' pos-out' : ''}`}>{label}</span>
+                    <div className="result-color-bar" />
+                    <div className="result-driver">
+                      <span className="result-code">{driver?.code ?? '—'}</span>
+                      <span className="result-name">{driver?.name ?? '—'}</span>
+                    </div>
+                    <span className="result-team">{driver?.constructor?.short_name ?? ''}</span>
+                    <span className={`result-pts${pts < 0 ? ' pts-neg' : pts === 0 ? ' pts-zero' : ''}`}>
+                      {pts > 0 ? `+${pts}` : pts}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
