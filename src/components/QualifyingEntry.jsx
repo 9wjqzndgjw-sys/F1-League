@@ -21,7 +21,7 @@ export default function QualifyingEntry() {
         .order('round_number'),
       supabase
         .from('drivers')
-        .select('id, code, name')
+        .select('id, code, full_name')
         .order('code'),
     ]).then(([{ data: gpsData }, { data: drvsData }]) => {
       setGps(gpsData ?? [])
@@ -179,7 +179,7 @@ export default function QualifyingEntry() {
                         value={d.id}
                         disabled={usedIds.has(d.id) && d.id !== driverId}
                       >
-                        {d.code} — {d.name}
+                        {d.code} — {d.full_name}
                       </option>
                     ))}
                   </select>
