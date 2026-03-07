@@ -2319,3 +2319,126 @@
   text-align: right;
   flex-shrink: 0;
 }
+
+/* ── msc-* aliases used by ManagerScoreCard / PickRow ── */
+
+.msc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem 0.75rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.msc-rank {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 1rem;
+  flex-shrink: 0;
+}
+
+.msc-name {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.msc-payout {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(62, 207, 142, 0.15);
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.msc-total {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+
+.msc-total.zero {
+  color: var(--text-muted);
+}
+
+.msc-picks {
+  display: flex;
+  flex-direction: column;
+}
+
+.msc-no-picks {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+}
+
+.msc-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.msc-pick-row:last-child {
+  border-bottom: none;
+}
+
+.msc-pick-bar {
+  width: 3px;
+  align-self: stretch;
+  background: var(--team-color, #444);
+  flex-shrink: 0;
+  box-shadow: 2px 0 8px var(--team-color, transparent);
+}
+
+.msc-con-badge {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: var(--teal-dim);
+  color: var(--teal);
+}
+
+.msc-pick-code {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  min-width: 2.5rem;
+}
+
+.msc-pick-name {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+}
+
+.msc-pick-pts {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: var(--teal);
+  min-width: 2rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.msc-pick-pts.zero {
+  color: var(--text-muted);
+}
+
+.msc-pick-pts.neg {
+  color: var(--red);
+}
