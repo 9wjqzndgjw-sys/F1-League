@@ -294,7 +294,7 @@ export default function Settings() {
       {/* Commissioner — Qualifying grid entry */}
       {isCommissioner && (
         <Section title="Qualifying Grid">
-          <QualifyingEntry drivers={drivers} />
+          <QualifyingEntry />
         </Section>
       )}
 

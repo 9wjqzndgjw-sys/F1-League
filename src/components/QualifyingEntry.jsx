@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { fetchQualifyingGrid } from '../lib/openf1'
 
-export default function QualifyingEntry({ drivers }) {
+export default function QualifyingEntry() {
   const [gps, setGps] = useState([])
+  const [drivers, setDrivers] = useState([])
   const [selectedGpId, setSelectedGpId] = useState('')
   const [sessionType, setSessionType] = useState('qualifying')
   const [slots, setSlots] = useState(Array(22).fill(''))
@@ -12,14 +13,20 @@ export default function QualifyingEntry({ drivers }) {
   const [msg, setMsg] = useState('')
 
   useEffect(() => {
-    supabase
-      .from('grand_prix')
-      .select('id, name, round_number, has_sprint, race_date')
-      .in('status', ['drafting', 'drafted', 'scored'])
-      .order('round_number')
-      .then(({ data, error }) => {
-        if (!error) setGps(data ?? [])
-      })
+    Promise.all([
+      supabase
+        .from('grand_prix')
+        .select('id, name, round_number, has_sprint, race_date')
+        .in('status', ['drafting', 'drafted', 'scored'])
+        .order('round_number'),
+      supabase
+        .from('drivers')
+        .select('id, code, name')
+        .order('code'),
+    ]).then(([{ data: gpsData }, { data: drvsData }]) => {
+      setGps(gpsData ?? [])
+      setDrivers(drvsData ?? [])
+    })
   }, [])
 
   useEffect(() => {
