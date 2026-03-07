@@ -1,4 +1,13 @@
-export function calcDriverScore(result, sessionType, raceScoring, sprintScoring, dnfPenalty = 0) {
+const DEFAULT_RACE_SCORING = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1]
+const DEFAULT_SPRINT_SCORING = [8, 7, 6, 5, 4, 3, 2, 1]
+
+export function calcDriverScore(
+  result,
+  sessionType,
+  raceScoring = DEFAULT_RACE_SCORING,
+  sprintScoring = DEFAULT_SPRINT_SCORING,
+  dnfPenalty = 0,
+) {
   if (!result) return 0
   if (result.is_dnf) return dnfPenalty
   if (result.is_dns || result.is_dsq) return 0

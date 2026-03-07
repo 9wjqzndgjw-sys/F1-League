@@ -69,14 +69,14 @@ export default function Results() {
     [drivers]
   )
 
-  const hasSprint = results.some((r) => r.session_type === 'sprint')
+  const selectedGp = gps.find((g) => g.id === selectedId)
+
+  const hasSprint = selectedGp?.has_sprint ?? results.some((r) => r.session_type === 'sprint')
 
   const sessionRows = useMemo(
     () => sortResults(results.filter((r) => r.session_type === session)),
     [results, session]
   )
-
-  const selectedGp = gps.find((g) => g.id === selectedId)
 
   if (loading) return <div className="view-loading">Loading results…</div>
   if (error) return <div className="view-loading">Error: {error}</div>
