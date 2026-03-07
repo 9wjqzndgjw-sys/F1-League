@@ -34,19 +34,23 @@ self.addEventListener('fetch', event => {
   // Never intercept Supabase or cross-origin traffic
   if (url.origin !== self.location.origin) return
 
-  // Navigation: cache-first so the shell loads instantly, revalidate in background
+  // Navigation: network-first so users always get fresh HTML after a deploy,
+  // fall back to cached shell only when offline
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then(cached => {
-        // Always revalidate in the background so next load gets fresh HTML
-        fetch('/index.html').then(res => {
-          if (res.ok) caches.open(CACHE).then(c => c.put('/index.html', res.clone()))
-        }).catch(() => {})
-        // Serve cache immediately; fall back to network if cache is cold
-        return cached || fetch(request).catch(() =>
-          new Response('App offline – please reconnect and refresh.', { status: 503 })
+      fetch(request)
+        .then(res => {
+          if (res.ok) {
+            const clone = res.clone()
+            caches.open(CACHE).then(c => c.put('/index.html', clone))
+          }
+          return res
+        })
+        .catch(() =>
+          caches.match('/index.html').then(cached =>
+            cached || new Response('App offline – please reconnect and refresh.', { status: 503 })
+          )
         )
-      })
     )
     return
   }
