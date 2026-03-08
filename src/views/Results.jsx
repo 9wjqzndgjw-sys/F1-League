@@ -19,7 +19,7 @@ function sortResults(rows) {
 
 // ── Manager Scores components ─────────────────────────────
 
-function PickRow({ pick, isScored }) {
+function PickRow({ pick, isScored, gridPos }) {
   const { entity, type, pts } = pick
   const color = type === 'driver'
     ? (entity?.constructor?.color ?? '#555')
@@ -32,19 +32,22 @@ function PickRow({ pick, isScored }) {
   return (
     <div className="msc-pick-row" style={{ '--team-color': color }}>
       <div className="msc-pick-bar" />
-      <span className={`msc-type-badge${type === 'constructor' ? ' con' : ''}`}>
-        {type === 'constructor' ? 'CON' : 'DRV'}
-      </span>
       <span className="msc-pick-code">{code}</span>
+      {gridPos != null && (
+        <span className="msc-grid-pos" title="Starting grid position">P{gridPos}</span>
+      )}
       <span className="msc-pick-name">{name}</span>
       <span className={`msc-pick-pts${!isScored ? ' zero' : pts < 0 ? ' neg' : pts === 0 ? ' zero' : ''}`}>
         {isScored ? (pts > 0 ? `+${pts}` : pts) : '—'}
+      </span>
+      <span className={`msc-type-badge${type === 'constructor' ? ' con' : ''}`}>
+        {type === 'constructor' ? 'CON' : 'DRV'}
       </span>
     </div>
   )
 }
 
-function ManagerScoreCard({ rank, score, isScored, payoutFirst, payoutSecond, isMe }) {
+function ManagerScoreCard({ rank, score, isScored, payoutFirst, payoutSecond, isMe, gridMap }) {
   const payout = rank === 1 ? payoutFirst : rank === 2 ? payoutSecond : 0
   const name = score.manager.display_name || score.manager.name || 'Unknown'
 
@@ -68,7 +71,12 @@ function ManagerScoreCard({ rank, score, isScored, payoutFirst, payoutSecond, is
         {score.picks.length === 0
           ? <span className="msc-no-picks">No picks recorded</span>
           : score.picks.map((p, i) => (
-              <PickRow key={i} pick={p} isScored={isScored} />
+              <PickRow
+                key={i}
+                pick={p}
+                isScored={isScored}
+                gridPos={p.type === 'driver' ? gridMap?.[p.entity?.id] : null}
+              />
             ))}
       </div>
     </div>
@@ -248,7 +256,21 @@ export default function Results() {
     })
   }, [managers, picks, results, drivers, constructors, raceScoring, sprintScoring, conScoring, dnfPenalty, driversById])
 
+  // Build driverId → qualifying grid position for the selected GP
+  // results already includes all session_type rows for the selected GP
+  const gridMap = useMemo(() => {
+    const map = {}
+    for (const r of results) {
+      if (r.session_type === 'qualifying' || r.session_type === 'sprint_qualifying') {
+        if (!map[r.session_type]) map[r.session_type] = {}
+        map[r.session_type][r.driver_id] = r.position
+      }
+    }
+    return map
+  }, [results])
+
   const selectedGp = gps.find((g) => g.id === selectedId)
+  const liveGp     = gps.find((g) => g.status === 'drafted')
 
   // ── Render ────────────────────────────────────────────
 
@@ -280,6 +302,20 @@ export default function Results() {
           </button>
         ))}
       </div>
+
+      {/* In-progress GP banner */}
+      {liveGp && (
+        <button
+          className="live-gp-banner"
+          onClick={() => { setSelectedId(liveGp.id); setSession('scores') }}
+        >
+          <span className="live-dot" />
+          <span className="live-gp-label">
+            R{String(liveGp.round_number).padStart(2, '0')} {liveGp.name} — in progress
+          </span>
+          <span className="live-gp-cta">View Scores ›</span>
+        </button>
+      )}
 
       <div className="results-gp-title">
         <span className="results-gp-round">Round {selectedGp?.round_number}</span>
@@ -325,6 +361,7 @@ export default function Results() {
                 payoutFirst={payoutFirst}
                 payoutSecond={payoutSecond}
                 isMe={score.manager.id === currentManager?.id}
+                gridMap={gridMap.qualifying}
               />
             ))
           )}
@@ -368,6 +405,11 @@ export default function Results() {
                     <span className="result-team">
                       {driver?.constructor?.short_name ?? ''}
                     </span>
+                    {session === 'race' && r.grid != null && (
+                      <span className="result-grid" title="Starting grid position">
+                        Grd {r.grid}
+                      </span>
+                    )}
                     <span
                       className={`result-pts${pts < 0 ? ' pts-neg' : pts === 0 ? ' pts-zero' : ''}`}
                     >

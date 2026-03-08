@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth.jsx'
 import { supabase } from '../lib/supabase'
 import DriverSync from '../components/DriverSync.jsx'
 import ResultSync from '../components/ResultSync.jsx'
+import QualifyingEntry from '../components/QualifyingEntry.jsx'
 
 const STATUS_NEXT = {
   upcoming: { label: 'Open Draft', next: 'drafting' },
@@ -285,6 +286,13 @@ export default function Settings() {
       {isCommissioner && (
         <Section title="Driver Sync">
           <DriverSync />
+        </Section>
+      )}
+
+      {/* Commissioner — Qualifying grid entry */}
+      {isCommissioner && (
+        <Section title="Qualifying Grid">
+          <QualifyingEntry />
         </Section>
       )}
 

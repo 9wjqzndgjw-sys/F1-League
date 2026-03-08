@@ -39,7 +39,7 @@ function NetworkBadge({ network }) {
   const cls = network === 'Free' ? 'free' : 'appletv'
   return (
     <span className={`tv-broadcast-badge ${cls}`}>
-      {network === 'Free' ? '★ Free' : 'Apple TV+'}
+      {network === 'Free' ? 'Apple TV+ Free' : 'Apple TV+'}
     </span>
   )
 }
@@ -161,7 +161,7 @@ export default function Calendar() {
       ) : (
         <div className="tv-guide">
           <p className="tv-disclaimer">
-            All times approximate Central Time · Apple TV+ required for Qualifying &amp; Race · Practice sessions stream free
+            All times approximate Central Time · Practice streams free on Apple TV+ (no subscription) · Qualifying &amp; Race require Apple TV+
           </p>
           {gps.map((gp) => (
             <TvCard key={gp.id} gp={gp} />
