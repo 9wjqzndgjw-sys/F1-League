@@ -132,7 +132,7 @@ export default function ResultSync() {
     setMatchedMeeting(null)
 
     try {
-      const rawDate = gp.race_date ?? gp.date
+      const rawDate = gp.race_date
       const year = rawDate ? new Date(rawDate).getFullYear() : new Date().getFullYear()
 
       // 1. Find the matching OpenF1 meeting by closest date
