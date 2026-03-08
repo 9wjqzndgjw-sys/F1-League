@@ -102,7 +102,7 @@ export default function ResultSync() {
     Promise.all([
       supabase
         .from('grand_prix')
-        .select('id,name,round_number,status,race_date,date,has_sprint')
+        .select('*')
         .in('status', ['drafted', 'scored'])
         .order('round_number'),
       supabase.from('drivers').select('id,number,code,full_name'),
