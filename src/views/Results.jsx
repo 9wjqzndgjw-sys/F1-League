@@ -223,8 +223,9 @@ export default function Results() {
 
     const byConstructor = {}
     for (const d of drivers) {
-      if (!byConstructor[d.constructor_id]) byConstructor[d.constructor_id] = []
-      byConstructor[d.constructor_id].push(driverPts[d.id])
+      const cid = d.constructor_id ?? d.team_id
+      if (!byConstructor[cid]) byConstructor[cid] = []
+      byConstructor[cid].push(driverPts[d.id])
     }
     const conScores = calcConstructorScores(constructors, byConstructor, conScoring)
     const conPtsMap = Object.fromEntries(conScores.map((cs) => [cs.constructorId, cs.constructorPoints]))

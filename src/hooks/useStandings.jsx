@@ -102,8 +102,9 @@ export function useStandings() {
       // Group driver pts by constructor for constructor ranking
       const byConstructor = {}
       for (const d of drivers) {
-        if (!byConstructor[d.constructor_id]) byConstructor[d.constructor_id] = []
-        byConstructor[d.constructor_id].push(driverFantasyPts[d.id])
+        const cid = d.constructor_id ?? d.team_id
+        if (!byConstructor[cid]) byConstructor[cid] = []
+        byConstructor[cid].push(driverFantasyPts[d.id])
       }
 
       const conScoreList = calcConstructorScores(constructors, byConstructor, constructorScoring)

@@ -117,6 +117,7 @@ export default function DriverSync() {
           code: change.code,
           full_name: change.fullName,
           team_id: change.teamId,
+          constructor_id: change.teamId,
           color,
         })
         if (error) failures++
@@ -126,6 +127,7 @@ export default function DriverSync() {
         if (change.fields.includes('code')) updates.code = change.code
         if (change.fields.includes('team')) {
           updates.team_id = change.teamId
+          updates.constructor_id = change.teamId
           updates.color = color
         }
         const { error } = await supabase.from('drivers').update(updates).eq('id', change.dbId)
