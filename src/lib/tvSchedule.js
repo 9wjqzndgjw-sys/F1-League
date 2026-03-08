@@ -31,7 +31,7 @@ export const TV_CIRCUITS = [
   // ── R2: China · SPRINT (CST = UTC+8) ─────────────────────
   // Confirmed times: FP1 03:30 GMT, SQ 07:30 GMT, Sprint 03:00 GMT, Q 07:00 GMT, Race 07:00 GMT
   {
-    pattern: /china|shanghai/i,
+    pattern: /chin(a|ese)|shanghai/i,
     label: 'Shanghai',
     sessions: [
       { label: 'FP1',               dayOffset: -3, time: '10:30 PM', network: 'Free'      },
