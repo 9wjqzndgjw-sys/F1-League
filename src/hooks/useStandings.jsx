@@ -147,21 +147,26 @@ export function useStandings() {
         : new Set()
       const isTie = firstPlaceMids.size > 1
       const multiplier = isTie ? 2 : 1
-      const contribution = topScore > 0 ? (payoutFirst + payoutSecond) * multiplier : 0
-      const firstPool = payoutFirst * N * multiplier
-      const firstEach = firstPlaceMids.size > 0 ? firstPool / firstPlaceMids.size : 0
-      const secondPool = payoutSecond * N * multiplier
+      const numFirst = firstPlaceMids.size || 1
+      const numNonFirst = N - numFirst
+
+      // 1st doesn't pay anyone. 2nd pays only the 1st-place pool.
+      // Everyone else pays both pools.
+      // Payout = payoutFirst × multiplier × numNonFirst, split among tied-1st winners
+      const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
+      // 2nd receives from everyone except 1st-place and themselves
+      const secondReceived = payoutSecond * multiplier * Math.max(0, numNonFirst - 1)
       const secondMid = ranked.find(([mid]) => !firstPlaceMids.has(mid))?.[0]
 
       for (const [mid, s] of ranked) {
-        s.payout = firstPlaceMids.has(mid) ? firstEach
-          : mid === secondMid ? secondPool
-          : 0
-        s.owed = contribution
+        const isFirst = firstPlaceMids.has(mid)
+        const isSecond = mid === secondMid
+        s.payout = isFirst ? firstEach : isSecond ? secondReceived : 0
+        s.owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
         s.net = s.payout - s.owed
         season[mid].total += s.total
         season[mid].payouts += s.payout
-        season[mid].owed += contribution
+        season[mid].owed += s.owed
       }
 
       return {
@@ -169,7 +174,6 @@ export function useStandings() {
         scores: mgr,
         ranked: ranked.map(([mid]) => mid),
         isTie,
-        contribution,
       }
     })
 

@@ -5,6 +5,12 @@ import { supabase } from '../lib/supabase'
 
 const RANK_EMOJI = ['🥇', '🥈', '🥉']
 
+function fmtAmt(n) {
+  const abs = Math.abs(n)
+  const str = abs % 1 === 0 ? String(abs) : abs.toFixed(2)
+  return `${n < 0 ? '-' : ''}$${str}`
+}
+
 function EmptyScores() {
   return (
     <div className="no-scores">
@@ -198,7 +204,7 @@ function SeasonTab({ standings, user, onSelectManager }) {
 
   return (
     <div className="standings-list">
-      {standings.map(({ manager, rank, total, payouts }) => (
+      {standings.map(({ manager, rank, total, net }) => (
         <div
           key={manager.id}
           className={`standings-row${manager.id === user?.id ? ' me' : ''}`}
@@ -214,7 +220,11 @@ function SeasonTab({ standings, user, onSelectManager }) {
             {manager.id === user?.id && <span className="me-tag">you</span>}
           </div>
           <span className="standings-pts">{total} <span className="pts-label">pts</span></span>
-          {payouts > 0 && <span className="standings-money">+${payouts}</span>}
+          {net !== 0 && (
+            <span className={`standings-money${net < 0 ? ' neg' : ''}`}>
+              {net > 0 ? '+' : ''}{fmtAmt(net)}
+            </span>
+          )}
           <span className="standings-chevron">›</span>
         </div>
       ))}
@@ -291,12 +301,6 @@ function RoundsTab({ gpScores, managers, user }) {
 
 // ── Ledger Tab ────────────────────────────────────────
 
-function fmtAmt(n) {
-  const abs = Math.abs(n)
-  const str = abs % 1 === 0 ? String(abs) : abs.toFixed(2)
-  return `${n < 0 ? '-' : ''}$${str}`
-}
-
 function LedgerTab({ gpScores, standings, managers, user }) {
   const [expanded, setExpanded] = useState(null)
   const managersById = Object.fromEntries(managers.map((m) => [m.id, m]))
@@ -333,7 +337,7 @@ function LedgerTab({ gpScores, standings, managers, user }) {
       </div>
 
       <div className="ledger-rounds">
-        {gpScores.map(({ gp, scores, ranked, isTie, contribution }) => {
+        {gpScores.map(({ gp, scores, ranked, isTie }) => {
           const isOpen = expanded === gp.id
           return (
             <div key={gp.id} className="ledger-gp">
@@ -344,7 +348,6 @@ function LedgerTab({ gpScores, standings, managers, user }) {
                 <span className="ledger-gp-round">R{String(gp.round_number).padStart(2, '0')}</span>
                 <span className="ledger-gp-name">{gp.name}</span>
                 {isTie && <span className="ledger-tie-badge">TIE</span>}
-                <span className="ledger-gp-stake">{fmtAmt(contribution)}/ea</span>
                 <span className="expand-chevron">{isOpen ? '▲' : '▼'}</span>
               </button>
               {isOpen && (

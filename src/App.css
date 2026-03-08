@@ -1045,6 +1045,10 @@
   white-space: nowrap;
 }
 
+.standings-money.neg {
+  color: var(--red);
+}
+
 /* ── Rounds Tab ──────────────────────────────────────── */
 .rounds-list {
   display: flex;

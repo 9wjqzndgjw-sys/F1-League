@@ -70,14 +70,16 @@ function ManagerScoreCard({ rank, score, isScored, payoutFirst, payoutSecond, is
       <div className="msc-picks">
         {score.picks.length === 0
           ? <span className="msc-no-picks">No picks recorded</span>
-          : score.picks.map((p, i) => (
-              <PickRow
-                key={i}
-                pick={p}
-                isScored={isScored}
-                gridPos={p.type === 'driver' ? gridMap?.[p.entity?.id] : null}
-              />
-            ))}
+          : [...score.picks]
+              .sort((a, b) => (a.type === 'constructor' ? -1 : b.type === 'constructor' ? 1 : 0))
+              .map((p, i) => (
+                <PickRow
+                  key={i}
+                  pick={p}
+                  isScored={isScored}
+                  gridPos={p.type === 'driver' ? gridMap?.[p.entity?.id] : null}
+                />
+              ))}
       </div>
     </div>
   )
