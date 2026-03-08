@@ -2755,6 +2755,114 @@
   letter-spacing: 0.02em;
 }
 
+/* ── AI Recap ────────────────────────────────────────── */
+.recap-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.recap-title {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.recap-generate-btn {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--teal-dim);
+  color: var(--teal);
+  border: 1px solid rgba(0, 210, 190, 0.25);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.recap-generate-btn:hover:not(:disabled) {
+  background: rgba(0, 210, 190, 0.18);
+}
+
+.recap-generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recap-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+}
+
+.recap-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  animation: recap-pulse 1.2s ease-in-out infinite;
+}
+
+.recap-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.recap-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes recap-pulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.recap-loading-text {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  margin-left: 0.25rem;
+}
+
+.recap-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.recap-paragraph {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text);
+  margin: 0;
+}
+
+.recap-empty {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.recap-error {
+  font-size: 0.82rem;
+  color: var(--red);
+  background: var(--red-dim);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
 /* ── Manager Detail ──────────────────────────────────── */
 .manager-detail {
   display: flex;

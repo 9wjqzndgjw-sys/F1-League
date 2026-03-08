@@ -112,6 +112,11 @@ export default function Results() {
   const [constructors, setConstructors] = useState([])
   const [leagueSettings, setLeagueSettings] = useState(null)
 
+  // ── Recap state ───────────────────────────────────────
+  const [recap, setRecap]           = useState(null)
+  const [recapLoading, setRecapLoading] = useState(false)
+  const [recapError, setRecapError] = useState(null)
+
   // ── Original initial load (unchanged) ─────────────────
   useEffect(() => {
     let cancelled = false
@@ -189,6 +194,50 @@ export default function Results() {
       .catch(() => {})
     return () => { cancelled = true }
   }, [selectedId])
+
+  // ── Load recap for selected GP ────────────────────────
+  useEffect(() => {
+    if (!selectedId) return
+    let cancelled = false
+    setRecap(null)
+    setRecapError(null)
+    supabase
+      .from('grand_prix')
+      .select('recap')
+      .eq('id', selectedId)
+      .single()
+      .then(({ data }) => { if (!cancelled) setRecap(data?.recap ?? null) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [selectedId])
+
+  async function generateRecap() {
+    if (!selectedId) return
+    setRecapLoading(true)
+    setRecapError(null)
+    try {
+      const { data: { session: authSession } } = await supabase.auth.getSession()
+      const token = authSession?.access_token
+      if (!token) throw new Error('Not authenticated')
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const res = await fetch(`${supabaseUrl}/functions/v1/generate-recap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ gp_id: selectedId }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Failed to generate recap')
+      setRecap(json.recap)
+    } catch (err) {
+      setRecapError(err.message ?? 'Error generating recap')
+    } finally {
+      setRecapLoading(false)
+    }
+  }
 
   // ── Derived ───────────────────────────────────────────
 
@@ -419,6 +468,49 @@ export default function Results() {
                 gridMap={gridMap.qualifying}
               />
             ))
+          )}
+
+          {/* ── AI Recap section ─────────────────── */}
+          {selectedGp?.status === 'scored' && (
+            <div className="recap-section">
+              <div className="recap-header">
+                <span className="recap-title">AI Recap</span>
+                {currentManager?.is_commissioner && (
+                  <button
+                    className="recap-generate-btn"
+                    onClick={generateRecap}
+                    disabled={recapLoading}
+                  >
+                    {recapLoading ? 'Generating…' : recap ? 'Regenerate' : 'Generate Recap'}
+                  </button>
+                )}
+              </div>
+              {recapLoading && (
+                <div className="recap-loading">
+                  <span className="recap-loading-dot" />
+                  <span className="recap-loading-dot" />
+                  <span className="recap-loading-dot" />
+                  <span className="recap-loading-text">Claude is writing the recap…</span>
+                </div>
+              )}
+              {recapError && !recapLoading && (
+                <div className="recap-error">{recapError}</div>
+              )}
+              {recap && !recapLoading && (
+                <div className="recap-body">
+                  {recap.split('\n').filter(l => l.trim()).map((line, i) => (
+                    <p key={i} className="recap-paragraph">{line}</p>
+                  ))}
+                </div>
+              )}
+              {!recap && !recapLoading && !recapError && (
+                <div className="recap-empty">
+                  {currentManager?.is_commissioner
+                    ? 'No recap yet. Hit "Generate Recap" to have Claude write one.'
+                    : 'No recap yet for this round.'}
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
