@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { supabase } from '../lib/supabase'
 import DriverSync from '../components/DriverSync.jsx'
+import ResultSync from '../components/ResultSync.jsx'
 import QualifyingEntry from '../components/QualifyingEntry.jsx'
 
 const STATUS_NEXT = {
@@ -292,6 +293,13 @@ export default function Settings() {
       {isCommissioner && (
         <Section title="Qualifying Grid">
           <QualifyingEntry />
+        </Section>
+      )}
+
+      {/* Commissioner — Result sync from OpenF1 */}
+      {isCommissioner && (
+        <Section title="Result Sync">
+          <ResultSync />
         </Section>
       )}
 
