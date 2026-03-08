@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth.jsx'
-import { calcDriverScore, calcConstructorScores } from '../lib/scoring'
+import { calcDriverScore, calcConstructorScores, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
 
 function posLabel(r) {
   if (r.is_dsq) return 'DSQ'
@@ -198,7 +198,7 @@ export default function Results() {
 
   const raceScoring   = useMemo(() => (leagueSettings?.scoring_race        ?? []).map(Number), [leagueSettings])
   const sprintScoring = useMemo(() => (leagueSettings?.scoring_sprint      ?? []).map(Number), [leagueSettings])
-  const conScoring    = useMemo(() => (leagueSettings?.scoring_constructor ?? []).map(Number), [leagueSettings])
+  const conScoring    = useMemo(() => (leagueSettings?.scoring_constructor?.length ? leagueSettings.scoring_constructor : DEFAULT_CONSTRUCTOR_SCORING).map(Number), [leagueSettings])
   const dnfPenalty    = leagueSettings?.dnf_penalty  ?? 0
   const payoutFirst   = leagueSettings?.payout_first  ?? 8
   const payoutSecond  = leagueSettings?.payout_second ?? 2

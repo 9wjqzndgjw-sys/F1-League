@@ -1,5 +1,6 @@
 const DEFAULT_RACE_SCORING = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1]
 const DEFAULT_SPRINT_SCORING = [8, 7, 6, 5, 4, 3, 2, 1]
+export const DEFAULT_CONSTRUCTOR_SCORING = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
 export function calcDriverScore(
   result,

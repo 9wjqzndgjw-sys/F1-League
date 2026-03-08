@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
-import { calcDriverScore, calcConstructorScores } from '../lib/scoring'
+import { calcDriverScore, calcConstructorScores, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
 
 export function useStandings() {
   const [loading, setLoading] = useState(true)
@@ -68,7 +68,7 @@ export function useStandings() {
     const payoutSecond = settings?.payout_second ?? 2
     const raceScoring = (settings?.scoring_race ?? []).map(Number)
     const sprintScoring = (settings?.scoring_sprint ?? []).map(Number)
-    const constructorScoring = (settings?.scoring_constructor ?? []).map(Number)
+    const constructorScoring = (settings?.scoring_constructor?.length ? settings.scoring_constructor : DEFAULT_CONSTRUCTOR_SCORING).map(Number)
     const dnfPenalty = settings?.dnf_penalty ?? 0
 
     const driversById = Object.fromEntries(drivers.map((d) => [d.id, d]))
