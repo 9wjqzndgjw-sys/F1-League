@@ -66,12 +66,15 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
     for (const { gp, scores } of gpScores) {
       const s = scores[manager.id]
       if (!s) continue
+      const sortedPicks = [...s.picks].sort((a, b) =>
+        a.type === 'constructor' ? -1 : b.type === 'constructor' ? 1 : 0
+      )
       cards.push({
         gp,
         scored: true,
         total: s.total,
-        payout: s.payout,
-        picks: s.picks, // [{ type, entity, pts }]
+        net: s.net,
+        picks: sortedPicks,
       })
     }
 
@@ -83,12 +86,15 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
     }
     for (const gp of draftedGps) {
       const raw = picksById[gp.id] ?? []
-      const picks = raw.sort((a, b) => a.pick_number - b.pick_number).map(p => ({
-        type: p.driver_id ? 'driver' : 'constructor',
-        entity: p.driver_id ? driversById[p.driver_id] : constructorsById[p.constructor_id],
-        pts: null,
-      }))
-      cards.push({ gp, scored: false, total: null, payout: 0, picks })
+      const picks = raw
+        .sort((a, b) => a.pick_number - b.pick_number)
+        .map(p => ({
+          type: p.driver_id ? 'driver' : 'constructor',
+          entity: p.driver_id ? driversById[p.driver_id] : constructorsById[p.constructor_id],
+          pts: null,
+        }))
+        .sort((a, b) => a.type === 'constructor' ? -1 : b.type === 'constructor' ? 1 : 0)
+      cards.push({ gp, scored: false, total: null, net: null, picks })
     }
 
     return cards.sort((a, b) => a.gp.round_number - b.gp.round_number)
@@ -145,7 +151,7 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
         <EmptyScores />
       ) : (
         <div className="manager-gp-list">
-          {gpCards.map(({ gp, scored, total, payout, picks }) => (
+          {gpCards.map(({ gp, scored, total, net, picks }) => (
             <div key={gp.id} className={`manager-gp-card${scored ? ' scored' : ''}`}>
               <div className="manager-gp-header">
                 <span className="manager-gp-round">R{String(gp.round_number).padStart(2, '0')}</span>
@@ -153,7 +159,11 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                 <span className="manager-gp-total">
                   {scored ? `${total} pts` : 'TBD'}
                 </span>
-                {payout > 0 && <span className="manager-gp-payout">+${payout}</span>}
+                {scored && net !== 0 && (
+                  <span className={`manager-gp-payout${net < 0 ? ' neg' : ''}`}>
+                    {net > 0 ? '+' : ''}{fmtAmt(net)}
+                  </span>
+                )}
               </div>
               <div className="manager-gp-picks">
                 {picks.map((p, i) => {

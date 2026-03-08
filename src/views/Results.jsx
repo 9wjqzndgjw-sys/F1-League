@@ -47,17 +47,23 @@ function PickRow({ pick, isScored, gridPos }) {
   )
 }
 
-function ManagerScoreCard({ rank, score, isScored, payoutFirst, payoutSecond, isMe, gridMap }) {
-  const payout = rank === 1 ? payoutFirst : rank === 2 ? payoutSecond : 0
+function fmtNet(n) {
+  const abs = Math.abs(n)
+  const str = abs % 1 === 0 ? String(abs) : abs.toFixed(2)
+  return `${n < 0 ? '-' : '+'}$${str}`
+}
+
+function ManagerScoreCard({ score, isScored, isMe, gridMap }) {
   const name = score.manager.display_name || score.manager.name || 'Unknown'
+  const rank = score.rank
 
   return (
     <div className={`manager-score-card${isMe ? ' me' : ''}`}>
       <div className="msc-header">
         <span className="msc-rank">{rank}</span>
         <span className="msc-name">{name}</span>
-        {isScored && payout > 0 && (
-          <span className="msc-payout">${payout}</span>
+        {isScored && score.net !== 0 && (
+          <span className={`msc-payout${score.net < 0 ? ' neg' : ''}`}>{fmtNet(score.net)}</span>
         )}
         {isScored ? (
           <span className={`msc-total${score.total <= 0 ? ' zero' : ''}`}>
@@ -251,13 +257,40 @@ export default function Results() {
       }
     }
 
-    return Object.values(scoreMap).sort((a, b) => {
+    const ranked = Object.values(scoreMap).sort((a, b) => {
       if (b.total !== a.total) return b.total - a.total
       const na = a.manager.display_name ?? a.manager.name ?? ''
       const nb = b.manager.display_name ?? b.manager.name ?? ''
       return na.localeCompare(nb)
     })
-  }, [managers, picks, results, drivers, constructors, raceScoring, sprintScoring, conScoring, dnfPenalty, driversById])
+
+    // Compute net money for each manager (mirrors useStandings logic)
+    const N = managers.length
+    const topScore = ranked.length > 0 ? ranked[0].total : 0
+    const firstMids = topScore > 0
+      ? new Set(ranked.filter(s => s.total === topScore).map(s => s.manager.id))
+      : new Set()
+    const isTie = firstMids.size > 1
+    const multiplier = isTie ? 2 : 1
+    const numFirst = firstMids.size || 1
+    const secondMid = ranked.find(s => !firstMids.has(s.manager.id))?.manager.id
+    const numNonFirst = N - numFirst
+    const numNonPodium = Math.max(0, numNonFirst - (secondMid ? 1 : 0))
+    const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
+    const secondReceived = payoutSecond * multiplier * numNonPodium
+
+    for (const [i, s] of ranked.entries()) {
+      const mid = s.manager.id
+      const isFirst = firstMids.has(mid)
+      const isSecond = mid === secondMid
+      s.rank = i + 1
+      s.payout = isFirst ? firstEach : isSecond ? secondReceived : 0
+      s.owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
+      s.net = s.payout - s.owed
+    }
+
+    return ranked
+  }, [managers, picks, results, drivers, constructors, raceScoring, sprintScoring, conScoring, dnfPenalty, payoutFirst, payoutSecond, driversById])
 
   // Build driverId → qualifying grid position for the selected GP
   // results already includes all session_type rows for the selected GP
@@ -271,6 +304,28 @@ export default function Results() {
     }
     return map
   }, [results])
+
+  // Constructor scores for the current race/sprint session
+  const constructorSessionScores = useMemo(() => {
+    if (!sessionRows.length || !constructors.length) return []
+    const sessionDriverPts = {}
+    for (const r of sessionRows) {
+      sessionDriverPts[r.driver_id] = calcDriverScore(r, session, raceScoring, sprintScoring, dnfPenalty)
+    }
+    const byConstructor = {}
+    for (const d of drivers) {
+      const cid = d.constructor_id ?? d.team_id
+      if (sessionDriverPts[d.id] !== undefined) {
+        if (!byConstructor[cid]) byConstructor[cid] = []
+        byConstructor[cid].push(sessionDriverPts[d.id])
+      }
+    }
+    const conScoreList = calcConstructorScores(constructors, byConstructor, conScoring)
+    return conScoreList
+      .filter(cs => byConstructor[cs.constructorId])
+      .sort((a, b) => a.rank - b.rank)
+      .map(cs => ({ ...cs, constructor: constructors.find(c => c.id === cs.constructorId) }))
+  }, [sessionRows, session, drivers, constructors, raceScoring, sprintScoring, conScoring, dnfPenalty])
 
   const selectedGp = gps.find((g) => g.id === selectedId)
   const liveGp     = gps.find((g) => g.status === 'drafted')
@@ -355,14 +410,11 @@ export default function Results() {
           {gpScores.length === 0 ? (
             <div className="no-session-results">No picks found for this round</div>
           ) : (
-            gpScores.map((score, i) => (
+            gpScores.map((score) => (
               <ManagerScoreCard
                 key={score.manager.id}
-                rank={i + 1}
                 score={score}
                 isScored={selectedGp?.status === 'scored'}
-                payoutFirst={payoutFirst}
-                payoutSecond={payoutSecond}
                 isMe={score.manager.id === currentManager?.id}
                 gridMap={gridMap.qualifying}
               />
@@ -379,6 +431,30 @@ export default function Results() {
           {!resultsLoading && sessionRows.length === 0 && (
             <div className="no-session-results">
               No {session} results entered for this round yet
+            </div>
+          )}
+
+          {!resultsLoading && constructorSessionScores.length > 0 && (
+            <div className="constructor-scores-section">
+              {constructorSessionScores.map((cs) => {
+                const color = cs.constructor?.color ?? '#555'
+                const name = cs.constructor?.short_name ?? cs.constructor?.name ?? '—'
+                return (
+                  <div
+                    key={cs.constructorId}
+                    className="constructor-score-row"
+                    style={{ '--team-color': color }}
+                  >
+                    <span className="con-score-rank">P{cs.rank}</span>
+                    <div className="result-color-bar" />
+                    <span className="con-score-name">{name}</span>
+                    <span className="con-score-total" title="Combined driver points">{cs.total} drv</span>
+                    <span className={`con-score-pts${cs.constructorPoints === 0 ? ' pts-zero' : ''}`}>
+                      +{cs.constructorPoints}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           )}
 
