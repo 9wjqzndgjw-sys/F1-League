@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
-import { calcDriverScore, calcConstructorScores } from '../lib/scoring'
+import { calcDriverScore, calcConstructorScores, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
 
 export function useStandings() {
   const [loading, setLoading] = useState(true)
@@ -21,6 +21,7 @@ export function useStandings() {
           { data: results, error: resultsErr },
           { data: picks, error: picksErr },
           { data: settings, error: settingsErr },
+          { data: nextGpRows },
         ] = await Promise.all([
           supabase.from('grand_prix').select('*').eq('status', 'scored').order('round_number'),
           supabase.from('managers').select('*'),
@@ -29,6 +30,8 @@ export function useStandings() {
           supabase.from('race_results').select('*'),
           supabase.from('draft_picks').select('*'),
           supabase.from('league_settings').select('*').eq('id', 1).single(),
+          supabase.from('grand_prix').select('id,name,round_number,race_date,has_sprint')
+            .eq('status', 'upcoming').order('round_number').limit(1),
         ])
 
         if (gpsErr) throw gpsErr
@@ -48,6 +51,7 @@ export function useStandings() {
           results: results ?? [],
           picks: picks ?? [],
           settings,
+          nextGp: nextGpRows?.[0] ?? null,
         })
       } catch (err) {
         if (!cancelled) setError(err.message)
@@ -68,14 +72,16 @@ export function useStandings() {
     const payoutSecond = settings?.payout_second ?? 2
     const raceScoring = (settings?.scoring_race ?? []).map(Number)
     const sprintScoring = (settings?.scoring_sprint ?? []).map(Number)
-    const constructorScoring = (settings?.scoring_constructor ?? []).map(Number)
+    const constructorScoring = (settings?.scoring_constructor?.length ? settings.scoring_constructor : DEFAULT_CONSTRUCTOR_SCORING).map(Number)
     const dnfPenalty = settings?.dnf_penalty ?? 0
 
     const driversById = Object.fromEntries(drivers.map((d) => [d.id, d]))
     const constructorsById = Object.fromEntries(constructors.map((c) => [c.id, c]))
 
+    const N = managers.length
+
     // Season accumulators keyed by manager id
-    const season = Object.fromEntries(managers.map((m) => [m.id, { total: 0, payouts: 0 }]))
+    const season = Object.fromEntries(managers.map((m) => [m.id, { total: 0, payouts: 0, owed: 0 }]))
 
     const gpScores = gps.map((gp) => {
       const gpPicks = picks.filter((p) => p.gp_id === gp.id)
@@ -102,8 +108,9 @@ export function useStandings() {
       // Group driver pts by constructor for constructor ranking
       const byConstructor = {}
       for (const d of drivers) {
-        if (!byConstructor[d.constructor_id]) byConstructor[d.constructor_id] = []
-        byConstructor[d.constructor_id].push(driverFantasyPts[d.id])
+        const cid = d.constructor_id ?? d.team_id
+        if (!byConstructor[cid]) byConstructor[cid] = []
+        byConstructor[cid].push(driverFantasyPts[d.id])
       }
 
       const conScoreList = calcConstructorScores(constructors, byConstructor, constructorScoring)
@@ -137,21 +144,45 @@ export function useStandings() {
 
       // Sort managers for this GP and assign payouts
       const ranked = Object.entries(mgr).sort((a, b) => b[1].total - a[1].total)
-      for (const [i, [mid, s]] of ranked.entries()) {
-        s.payout = i === 0 ? payoutFirst : i === 1 ? payoutSecond : 0
+
+      const topScore = ranked.length > 0 ? ranked[0][1].total : 0
+      const firstPlaceMids = topScore > 0
+        ? new Set(ranked.filter(([, s]) => s.total === topScore).map(([mid]) => mid))
+        : new Set()
+      const isTie = firstPlaceMids.size > 1
+      const multiplier = isTie ? 2 : 1
+      const numFirst = firstPlaceMids.size || 1
+      const secondMid = ranked.find(([mid]) => !firstPlaceMids.has(mid))?.[0]
+
+      // 1st owes nothing. 2nd pays to the 1st pool but not the 2nd pool.
+      // Others pay both pools.
+      const numNonFirst = N - numFirst          // pays into the 1st pool (includes 2nd)
+      const numNonPodium = Math.max(0, numNonFirst - (secondMid ? 1 : 0))  // pays into 2nd pool
+
+      const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
+      const secondReceived = payoutSecond * multiplier * numNonPodium
+
+      for (const [mid, s] of ranked) {
+        const isFirst = firstPlaceMids.has(mid)
+        const isSecond = mid === secondMid
+        s.payout = isFirst ? firstEach : isSecond ? secondReceived : 0
+        s.owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
+        s.net = s.payout - s.owed
         season[mid].total += s.total
         season[mid].payouts += s.payout
+        season[mid].owed += s.owed
       }
 
       return {
         gp,
         scores: mgr,
         ranked: ranked.map(([mid]) => mid),
+        isTie,
       }
     })
 
     const standings = managers
-      .map((m) => ({ manager: m, ...season[m.id] }))
+      .map((m) => ({ manager: m, ...season[m.id], net: season[m.id].payouts - season[m.id].owed }))
       .sort((a, b) => b.total - a.total)
       .map((s, i) => ({ ...s, rank: i + 1 }))
 
@@ -166,6 +197,7 @@ export function useStandings() {
     managers: rawData?.managers ?? [],
     drivers: rawData?.drivers ?? [],
     constructors: rawData?.constructors ?? [],
+    nextGp: rawData?.nextGp ?? null,
     totalGps: 24,
   }
 }

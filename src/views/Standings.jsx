@@ -5,6 +5,12 @@ import { supabase } from '../lib/supabase'
 
 const RANK_EMOJI = ['🥇', '🥈', '🥉']
 
+function fmtAmt(n) {
+  const abs = Math.abs(n)
+  const str = abs % 1 === 0 ? String(abs) : abs.toFixed(2)
+  return `${n < 0 ? '-' : ''}$${str}`
+}
+
 function EmptyScores() {
   return (
     <div className="no-scores">
@@ -60,12 +66,15 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
     for (const { gp, scores } of gpScores) {
       const s = scores[manager.id]
       if (!s) continue
+      const sortedPicks = [...s.picks].sort((a, b) =>
+        a.type === 'constructor' ? -1 : b.type === 'constructor' ? 1 : 0
+      )
       cards.push({
         gp,
         scored: true,
         total: s.total,
-        payout: s.payout,
-        picks: s.picks, // [{ type, entity, pts }]
+        net: s.net,
+        picks: sortedPicks,
       })
     }
 
@@ -77,12 +86,15 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
     }
     for (const gp of draftedGps) {
       const raw = picksById[gp.id] ?? []
-      const picks = raw.sort((a, b) => a.pick_number - b.pick_number).map(p => ({
-        type: p.driver_id ? 'driver' : 'constructor',
-        entity: p.driver_id ? driversById[p.driver_id] : constructorsById[p.constructor_id],
-        pts: null,
-      }))
-      cards.push({ gp, scored: false, total: null, payout: 0, picks })
+      const picks = raw
+        .sort((a, b) => a.pick_number - b.pick_number)
+        .map(p => ({
+          type: p.driver_id ? 'driver' : 'constructor',
+          entity: p.driver_id ? driversById[p.driver_id] : constructorsById[p.constructor_id],
+          pts: null,
+        }))
+        .sort((a, b) => a.type === 'constructor' ? -1 : b.type === 'constructor' ? 1 : 0)
+      cards.push({ gp, scored: false, total: null, net: null, picks })
     }
 
     return cards.sort((a, b) => a.gp.round_number - b.gp.round_number)
@@ -139,7 +151,7 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
         <EmptyScores />
       ) : (
         <div className="manager-gp-list">
-          {gpCards.map(({ gp, scored, total, payout, picks }) => (
+          {gpCards.map(({ gp, scored, total, net, picks }) => (
             <div key={gp.id} className={`manager-gp-card${scored ? ' scored' : ''}`}>
               <div className="manager-gp-header">
                 <span className="manager-gp-round">R{String(gp.round_number).padStart(2, '0')}</span>
@@ -147,7 +159,11 @@ function ManagerDetail({ manager, gpScores, drivers, constructors, user, onBack 
                 <span className="manager-gp-total">
                   {scored ? `${total} pts` : 'TBD'}
                 </span>
-                {payout > 0 && <span className="manager-gp-payout">+${payout}</span>}
+                {scored && net !== 0 && (
+                  <span className={`manager-gp-payout${net < 0 ? ' neg' : ''}`}>
+                    {net > 0 ? '+' : ''}{fmtAmt(net)}
+                  </span>
+                )}
               </div>
               <div className="manager-gp-picks">
                 {picks.map((p, i) => {
@@ -198,7 +214,7 @@ function SeasonTab({ standings, user, onSelectManager }) {
 
   return (
     <div className="standings-list">
-      {standings.map(({ manager, rank, total, payouts }) => (
+      {standings.map(({ manager, rank, total, net }) => (
         <div
           key={manager.id}
           className={`standings-row${manager.id === user?.id ? ' me' : ''}`}
@@ -214,7 +230,11 @@ function SeasonTab({ standings, user, onSelectManager }) {
             {manager.id === user?.id && <span className="me-tag">you</span>}
           </div>
           <span className="standings-pts">{total} <span className="pts-label">pts</span></span>
-          {payouts > 0 && <span className="standings-money">+${payouts}</span>}
+          {net !== 0 && (
+            <span className={`standings-money${net < 0 ? ' neg' : ''}`}>
+              {net > 0 ? '+' : ''}{fmtAmt(net)}
+            </span>
+          )}
           <span className="standings-chevron">›</span>
         </div>
       ))}
@@ -289,10 +309,89 @@ function RoundsTab({ gpScores, managers, user }) {
   )
 }
 
+// ── Ledger Tab ────────────────────────────────────────
+
+function LedgerTab({ gpScores, standings, managers, user }) {
+  const [expanded, setExpanded] = useState(null)
+  const managersById = Object.fromEntries(managers.map((m) => [m.id, m]))
+
+  const sorted = [...standings].sort((a, b) => b.net - a.net)
+
+  if (!gpScores.length) return <EmptyScores />
+
+  return (
+    <div className="ledger-view">
+      <div className="ledger-balances">
+        <div className="ledger-balances-header">
+          <span>Manager</span>
+          <span>Won</span>
+          <span>Paid</span>
+          <span>Balance</span>
+        </div>
+        {sorted.map(({ manager, payouts, owed, net }) => (
+          <div
+            key={manager.id}
+            className={`ledger-balance-row${manager.id === user?.id ? ' me' : ''}`}
+          >
+            <span className="ledger-name">
+              {manager.display_name ?? manager.name}
+              {manager.id === user?.id && <span className="me-tag">you</span>}
+            </span>
+            <span className="ledger-won">{fmtAmt(payouts)}</span>
+            <span className="ledger-paid">{fmtAmt(-owed)}</span>
+            <span className={`ledger-net ${net > 0 ? 'pos' : net < 0 ? 'neg' : ''}`}>
+              {net > 0 ? '+' : ''}{fmtAmt(net)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="ledger-rounds">
+        {gpScores.map(({ gp, scores, ranked, isTie }) => {
+          const isOpen = expanded === gp.id
+          return (
+            <div key={gp.id} className="ledger-gp">
+              <button
+                className="ledger-gp-header"
+                onClick={() => setExpanded(isOpen ? null : gp.id)}
+              >
+                <span className="ledger-gp-round">R{String(gp.round_number).padStart(2, '0')}</span>
+                <span className="ledger-gp-name">{gp.name}</span>
+                {isTie && <span className="ledger-tie-badge">TIE</span>}
+                <span className="expand-chevron">{isOpen ? '▲' : '▼'}</span>
+              </button>
+              {isOpen && (
+                <div className="ledger-gp-rows">
+                  {ranked.map((mid) => {
+                    const m = managersById[mid]
+                    const s = scores[mid]
+                    return (
+                      <div key={mid} className={`ledger-row${mid === user?.id ? ' me' : ''}`}>
+                        <span className="ledger-row-name">{m?.display_name ?? m?.name ?? '—'}</span>
+                        <span className="ledger-row-owed">{fmtAmt(-s.owed)}</span>
+                        <span className={`ledger-row-payout ${s.payout > 0 ? 'pos' : ''}`}>
+                          {s.payout > 0 ? `+${fmtAmt(s.payout)}` : '—'}
+                        </span>
+                        <span className={`ledger-row-net ${s.net > 0 ? 'pos' : s.net < 0 ? 'neg' : ''}`}>
+                          {s.net > 0 ? '+' : ''}{fmtAmt(s.net)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Main View ─────────────────────────────────────────
 
 export default function Standings() {
-  const { loading, error, standings, gpScores, managers, drivers, constructors, totalGps } = useStandings()
+  const { loading, error, standings, gpScores, managers, drivers, constructors, nextGp, totalGps } = useStandings()
   const { user } = useAuth()
   const [tab, setTab] = useState('season')
   const [selectedManager, setSelectedManager] = useState(null)
@@ -322,6 +421,19 @@ export default function Standings() {
         </span>
       </div>
 
+      {nextGp && (
+        <div className="next-gp-banner">
+          <span className="next-gp-label">Next Up</span>
+          <span className="next-gp-round">R{String(nextGp.round_number).padStart(2, '0')}</span>
+          <span className="next-gp-name">{nextGp.name}</span>
+          {nextGp.race_date && (
+            <span className="next-gp-date">
+              {new Date(nextGp.race_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="standings-tabs">
         <button
           className={`standings-tab${tab === 'season' ? ' active' : ''}`}
@@ -335,6 +447,12 @@ export default function Standings() {
         >
           Rounds
         </button>
+        <button
+          className={`standings-tab${tab === 'ledger' ? ' active' : ''}`}
+          onClick={() => setTab('ledger')}
+        >
+          Ledger
+        </button>
       </div>
 
       {tab === 'season' && (
@@ -342,6 +460,9 @@ export default function Standings() {
       )}
       {tab === 'rounds' && (
         <RoundsTab gpScores={gpScores} managers={managers} user={user} />
+      )}
+      {tab === 'ledger' && (
+        <LedgerTab gpScores={gpScores} standings={standings} managers={managers} user={user} />
       )}
     </div>
   )
