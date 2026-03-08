@@ -150,17 +150,19 @@ export function useStandings() {
       const numFirst = firstPlaceMids.size || 1
       const secondMid = ranked.find(([mid]) => !firstPlaceMids.has(mid))?.[0]
 
-      // Only non-podium managers pay (everyone except 1st and 2nd owes nothing).
-      // Payers = N minus the tied-1st group minus the single 2nd place manager.
-      const numPayers = Math.max(0, N - numFirst - (secondMid ? 1 : 0))
-      const firstEach = numPayers > 0 ? payoutFirst * multiplier * numPayers / numFirst : 0
-      const secondReceived = payoutSecond * multiplier * numPayers
+      // 1st owes nothing. 2nd pays to the 1st pool but not the 2nd pool.
+      // Others pay both pools.
+      const numNonFirst = N - numFirst          // pays into the 1st pool (includes 2nd)
+      const numNonPodium = Math.max(0, numNonFirst - (secondMid ? 1 : 0))  // pays into 2nd pool
+
+      const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
+      const secondReceived = payoutSecond * multiplier * numNonPodium
 
       for (const [mid, s] of ranked) {
         const isFirst = firstPlaceMids.has(mid)
         const isSecond = mid === secondMid
         s.payout = isFirst ? firstEach : isSecond ? secondReceived : 0
-        s.owed = (isFirst || isSecond) ? 0 : (payoutFirst + payoutSecond) * multiplier
+        s.owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
         s.net = s.payout - s.owed
         season[mid].total += s.total
         season[mid].payouts += s.payout
