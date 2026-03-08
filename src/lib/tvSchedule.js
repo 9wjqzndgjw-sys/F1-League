@@ -29,14 +29,15 @@ export const TV_CIRCUITS = [
   },
 
   // ── R2: China · SPRINT (CST = UTC+8) ─────────────────────
+  // Confirmed times: FP1 03:30 GMT, SQ 07:30 GMT, Sprint 03:00 GMT, Q 07:00 GMT, Race 07:00 GMT
   {
     pattern: /china|shanghai/i,
     label: 'Shanghai',
     sessions: [
-      { label: 'FP1',               dayOffset: -3, time: '11:30 PM', network: 'Free'      },
-      { label: 'Sprint Qualifying', dayOffset: -2, time: '4:00 AM',  network: 'Apple TV+' },
+      { label: 'FP1',               dayOffset: -3, time: '10:30 PM', network: 'Free'      },
+      { label: 'Sprint Qualifying', dayOffset: -2, time: '2:30 AM',  network: 'Apple TV+' },
       { label: 'Sprint',            dayOffset: -2, time: '10:00 PM', network: 'Apple TV+' },
-      { label: 'Qualifying',        dayOffset: -1, time: '4:00 AM',  network: 'Apple TV+' },
+      { label: 'Qualifying',        dayOffset: -1, time: '2:00 AM',  network: 'Apple TV+' },
       { label: 'Race',              dayOffset:  0, time: '2:00 AM',  network: 'Apple TV+' },
     ],
   },
