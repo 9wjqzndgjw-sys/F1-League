@@ -74,8 +74,10 @@ export function useStandings() {
     const driversById = Object.fromEntries(drivers.map((d) => [d.id, d]))
     const constructorsById = Object.fromEntries(constructors.map((c) => [c.id, c]))
 
+    const N = managers.length
+
     // Season accumulators keyed by manager id
-    const season = Object.fromEntries(managers.map((m) => [m.id, { total: 0, payouts: 0 }]))
+    const season = Object.fromEntries(managers.map((m) => [m.id, { total: 0, payouts: 0, owed: 0 }]))
 
     const gpScores = gps.map((gp) => {
       const gpPicks = picks.filter((p) => p.gp_id === gp.id)
@@ -138,21 +140,41 @@ export function useStandings() {
 
       // Sort managers for this GP and assign payouts
       const ranked = Object.entries(mgr).sort((a, b) => b[1].total - a[1].total)
-      for (const [i, [mid, s]] of ranked.entries()) {
-        s.payout = i === 0 ? payoutFirst : i === 1 ? payoutSecond : 0
+
+      const topScore = ranked.length > 0 ? ranked[0][1].total : 0
+      const firstPlaceMids = topScore > 0
+        ? new Set(ranked.filter(([, s]) => s.total === topScore).map(([mid]) => mid))
+        : new Set()
+      const isTie = firstPlaceMids.size > 1
+      const multiplier = isTie ? 2 : 1
+      const contribution = topScore > 0 ? (payoutFirst + payoutSecond) * multiplier : 0
+      const firstPool = payoutFirst * N * multiplier
+      const firstEach = firstPlaceMids.size > 0 ? firstPool / firstPlaceMids.size : 0
+      const secondPool = payoutSecond * N * multiplier
+      const secondMid = ranked.find(([mid]) => !firstPlaceMids.has(mid))?.[0]
+
+      for (const [mid, s] of ranked) {
+        s.payout = firstPlaceMids.has(mid) ? firstEach
+          : mid === secondMid ? secondPool
+          : 0
+        s.owed = contribution
+        s.net = s.payout - s.owed
         season[mid].total += s.total
         season[mid].payouts += s.payout
+        season[mid].owed += contribution
       }
 
       return {
         gp,
         scores: mgr,
         ranked: ranked.map(([mid]) => mid),
+        isTie,
+        contribution,
       }
     })
 
     const standings = managers
-      .map((m) => ({ manager: m, ...season[m.id] }))
+      .map((m) => ({ manager: m, ...season[m.id], net: season[m.id].payouts - season[m.id].owed }))
       .sort((a, b) => b.total - a.total)
       .map((s, i) => ({ ...s, rank: i + 1 }))
 

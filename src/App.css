@@ -2822,3 +2822,202 @@
   flex-shrink: 0;
   margin-left: auto;
 }
+
+/* ── Ledger Tab ──────────────────────────────────────── */
+.ledger-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ledger-balances {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.ledger-balances-header {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.65rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.ledger-balance-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ledger-balance-row:last-child {
+  border-bottom: none;
+}
+
+.ledger-balance-row.me {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ledger-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ledger-won {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.ledger-paid {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  color: var(--red);
+  white-space: nowrap;
+}
+
+.ledger-net {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  min-width: 3.5rem;
+  text-align: right;
+}
+
+.ledger-net.pos { color: var(--green); }
+.ledger-net.neg { color: var(--red); }
+
+.ledger-rounds {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ledger-gp {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.ledger-gp-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ledger-gp-header:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.ledger-gp-round {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.ledger-gp-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  flex: 1;
+}
+
+.ledger-tie-badge {
+  font-size: 0.6rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--bg);
+  background: var(--red);
+  border-radius: 3px;
+  padding: 0.1em 0.4em;
+  flex-shrink: 0;
+}
+
+.ledger-gp-stake {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.ledger-gp-rows {
+  border-top: 1px solid var(--border);
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ledger-row:last-child {
+  border-bottom: none;
+}
+
+.ledger-row.me {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ledger-row-name {
+  font-size: 0.8rem;
+}
+
+.ledger-row-owed {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--red);
+  white-space: nowrap;
+}
+
+.ledger-row-payout {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.ledger-row-payout.pos {
+  color: var(--green);
+}
+
+.ledger-row-net {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  text-align: right;
+  min-width: 3rem;
+}
+
+.ledger-row-net.pos { color: var(--green); }
+.ledger-row-net.neg { color: var(--red); }

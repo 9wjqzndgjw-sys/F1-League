@@ -289,6 +289,92 @@ function RoundsTab({ gpScores, managers, user }) {
   )
 }
 
+// ── Ledger Tab ────────────────────────────────────────
+
+function fmtAmt(n) {
+  const abs = Math.abs(n)
+  const str = abs % 1 === 0 ? String(abs) : abs.toFixed(2)
+  return `${n < 0 ? '-' : ''}$${str}`
+}
+
+function LedgerTab({ gpScores, standings, managers, user }) {
+  const [expanded, setExpanded] = useState(null)
+  const managersById = Object.fromEntries(managers.map((m) => [m.id, m]))
+
+  const sorted = [...standings].sort((a, b) => b.net - a.net)
+
+  if (!gpScores.length) return <EmptyScores />
+
+  return (
+    <div className="ledger-view">
+      <div className="ledger-balances">
+        <div className="ledger-balances-header">
+          <span>Manager</span>
+          <span>Won</span>
+          <span>Paid</span>
+          <span>Balance</span>
+        </div>
+        {sorted.map(({ manager, payouts, owed, net }) => (
+          <div
+            key={manager.id}
+            className={`ledger-balance-row${manager.id === user?.id ? ' me' : ''}`}
+          >
+            <span className="ledger-name">
+              {manager.display_name ?? manager.name}
+              {manager.id === user?.id && <span className="me-tag">you</span>}
+            </span>
+            <span className="ledger-won">{fmtAmt(payouts)}</span>
+            <span className="ledger-paid">{fmtAmt(-owed)}</span>
+            <span className={`ledger-net ${net > 0 ? 'pos' : net < 0 ? 'neg' : ''}`}>
+              {net > 0 ? '+' : ''}{fmtAmt(net)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="ledger-rounds">
+        {gpScores.map(({ gp, scores, ranked, isTie, contribution }) => {
+          const isOpen = expanded === gp.id
+          return (
+            <div key={gp.id} className="ledger-gp">
+              <button
+                className="ledger-gp-header"
+                onClick={() => setExpanded(isOpen ? null : gp.id)}
+              >
+                <span className="ledger-gp-round">R{String(gp.round_number).padStart(2, '0')}</span>
+                <span className="ledger-gp-name">{gp.name}</span>
+                {isTie && <span className="ledger-tie-badge">TIE</span>}
+                <span className="ledger-gp-stake">{fmtAmt(contribution)}/ea</span>
+                <span className="expand-chevron">{isOpen ? '▲' : '▼'}</span>
+              </button>
+              {isOpen && (
+                <div className="ledger-gp-rows">
+                  {ranked.map((mid) => {
+                    const m = managersById[mid]
+                    const s = scores[mid]
+                    return (
+                      <div key={mid} className={`ledger-row${mid === user?.id ? ' me' : ''}`}>
+                        <span className="ledger-row-name">{m?.display_name ?? m?.name ?? '—'}</span>
+                        <span className="ledger-row-owed">{fmtAmt(-s.owed)}</span>
+                        <span className={`ledger-row-payout ${s.payout > 0 ? 'pos' : ''}`}>
+                          {s.payout > 0 ? `+${fmtAmt(s.payout)}` : '—'}
+                        </span>
+                        <span className={`ledger-row-net ${s.net > 0 ? 'pos' : s.net < 0 ? 'neg' : ''}`}>
+                          {s.net > 0 ? '+' : ''}{fmtAmt(s.net)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Main View ─────────────────────────────────────────
 
 export default function Standings() {
@@ -335,6 +421,12 @@ export default function Standings() {
         >
           Rounds
         </button>
+        <button
+          className={`standings-tab${tab === 'ledger' ? ' active' : ''}`}
+          onClick={() => setTab('ledger')}
+        >
+          Ledger
+        </button>
       </div>
 
       {tab === 'season' && (
@@ -342,6 +434,9 @@ export default function Standings() {
       )}
       {tab === 'rounds' && (
         <RoundsTab gpScores={gpScores} managers={managers} user={user} />
+      )}
+      {tab === 'ledger' && (
+        <LedgerTab gpScores={gpScores} standings={standings} managers={managers} user={user} />
       )}
     </div>
   )
