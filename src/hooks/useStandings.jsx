@@ -21,6 +21,7 @@ export function useStandings() {
           { data: results, error: resultsErr },
           { data: picks, error: picksErr },
           { data: settings, error: settingsErr },
+          { data: nextGpRows },
         ] = await Promise.all([
           supabase.from('grand_prix').select('*').eq('status', 'scored').order('round_number'),
           supabase.from('managers').select('*'),
@@ -29,6 +30,8 @@ export function useStandings() {
           supabase.from('race_results').select('*'),
           supabase.from('draft_picks').select('*'),
           supabase.from('league_settings').select('*').eq('id', 1).single(),
+          supabase.from('grand_prix').select('id,name,round_number,race_date,has_sprint')
+            .eq('status', 'upcoming').order('round_number').limit(1),
         ])
 
         if (gpsErr) throw gpsErr
@@ -48,6 +51,7 @@ export function useStandings() {
           results: results ?? [],
           picks: picks ?? [],
           settings,
+          nextGp: nextGpRows?.[0] ?? null,
         })
       } catch (err) {
         if (!cancelled) setError(err.message)
@@ -193,6 +197,7 @@ export function useStandings() {
     managers: rawData?.managers ?? [],
     drivers: rawData?.drivers ?? [],
     constructors: rawData?.constructors ?? [],
+    nextGp: rawData?.nextGp ?? null,
     totalGps: 24,
   }
 }

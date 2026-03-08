@@ -391,7 +391,7 @@ function LedgerTab({ gpScores, standings, managers, user }) {
 // ── Main View ─────────────────────────────────────────
 
 export default function Standings() {
-  const { loading, error, standings, gpScores, managers, drivers, constructors, totalGps } = useStandings()
+  const { loading, error, standings, gpScores, managers, drivers, constructors, nextGp, totalGps } = useStandings()
   const { user } = useAuth()
   const [tab, setTab] = useState('season')
   const [selectedManager, setSelectedManager] = useState(null)
@@ -420,6 +420,19 @@ export default function Standings() {
           {gpScores.length} of {totalGps} rounds scored
         </span>
       </div>
+
+      {nextGp && (
+        <div className="next-gp-banner">
+          <span className="next-gp-label">Next Up</span>
+          <span className="next-gp-round">R{String(nextGp.round_number).padStart(2, '0')}</span>
+          <span className="next-gp-name">{nextGp.name}</span>
+          {nextGp.race_date && (
+            <span className="next-gp-date">
+              {new Date(nextGp.race_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="standings-tabs">
         <button
