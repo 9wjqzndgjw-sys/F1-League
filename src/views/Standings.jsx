@@ -423,7 +423,7 @@ export default function Standings() {
 
       {nextGp && (
         <div className="next-gp-banner">
-          <span className="next-gp-label">Next Up</span>
+          <span className="next-gp-label">{nextGp.status === 'drafting' ? 'Draft in Progress' : 'Next Up'}</span>
           <span className="next-gp-round">R{String(nextGp.round_number).padStart(2, '0')}</span>
           <span className="next-gp-name">{nextGp.name}</span>
           {nextGp.race_date && (

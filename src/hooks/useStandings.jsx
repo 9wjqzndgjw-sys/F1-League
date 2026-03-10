@@ -30,8 +30,8 @@ export function useStandings() {
           supabase.from('race_results').select('*'),
           supabase.from('draft_picks').select('*'),
           supabase.from('league_settings').select('*').eq('id', 1).single(),
-          supabase.from('grand_prix').select('id,name,round_number,race_date,has_sprint')
-            .eq('status', 'upcoming').order('round_number').limit(1),
+          supabase.from('grand_prix').select('id,name,round_number,race_date,has_sprint,status')
+            .in('status', ['drafting', 'upcoming']).order('round_number').limit(1),
         ])
 
         if (gpsErr) throw gpsErr
