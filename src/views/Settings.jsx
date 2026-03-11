@@ -103,12 +103,21 @@ export default function Settings() {
       return
     }
     setNotifStatus('sending')
-    const registration = await navigator.serviceWorker.ready
-    await registration.showNotification('F1 Fantasy 2026', {
-      body: 'Push notifications are working! 🏁',
-      icon: '/icon.svg',
-      badge: '/icon.svg',
-    })
+    try {
+      const swReady = Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('SW not ready')), 4000)),
+      ])
+      const registration = await swReady
+      await registration.showNotification('F1 Fantasy 2026', {
+        body: 'Push notifications are working! 🏁',
+        icon: '/icon.svg',
+        badge: '/icon.svg',
+      })
+    } catch {
+      // SW not ready yet — fall back to a plain Notification
+      new Notification('F1 Fantasy 2026', { body: 'Push notifications are working! 🏁', icon: '/icon.svg' })
+    }
     setNotifStatus('sent')
     setTimeout(() => setNotifStatus('idle'), 3000)
   }
