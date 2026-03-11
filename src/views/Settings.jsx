@@ -48,6 +48,9 @@ export default function Settings() {
   const [nameSaving, setNameSaving] = useState(false)
   const [nameMsg, setNameMsg] = useState('')
 
+  // Notifications
+  const [notifStatus, setNotifStatus] = useState('idle') // idle | requesting | sending | sent | denied | unsupported
+
   // Commissioner editable fields
   const [draftRounds, setDraftRounds] = useState(3)
   const [payoutFirst, setPayoutFirst] = useState(8)
@@ -87,6 +90,28 @@ export default function Settings() {
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [user])
+
+  async function sendTestNotification() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      setNotifStatus('unsupported')
+      return
+    }
+    setNotifStatus('requesting')
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') {
+      setNotifStatus('denied')
+      return
+    }
+    setNotifStatus('sending')
+    const registration = await navigator.serviceWorker.ready
+    await registration.showNotification('F1 Fantasy 2026', {
+      body: 'Push notifications are working! 🏁',
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+    })
+    setNotifStatus('sent')
+    setTimeout(() => setNotifStatus('idle'), 3000)
+  }
 
   async function saveName() {
     if (!displayName.trim()) return
@@ -192,6 +217,27 @@ export default function Settings() {
           {nameMsg && <span className="settings-saved">{nameMsg}</span>}
         </div>
         <button className="signout-full-btn" onClick={signOut}>Sign Out</button>
+      </Section>
+
+      {/* Notifications */}
+      <Section title="Notifications">
+        <div className="settings-card">
+          <div className="settings-info-row">
+            <span className="info-label">Test push notification</span>
+            <button
+              className="settings-save-btn"
+              onClick={sendTestNotification}
+              disabled={notifStatus === 'requesting' || notifStatus === 'sending'}
+            >
+              {notifStatus === 'requesting' ? 'Requesting…'
+                : notifStatus === 'sending' ? 'Sending…'
+                : 'Send Test'}
+            </button>
+          </div>
+          {notifStatus === 'sent' && <p className="settings-saved" style={{ padding: '0.25rem 0.75rem' }}>Notification sent!</p>}
+          {notifStatus === 'denied' && <p className="settings-saved" style={{ padding: '0.25rem 0.75rem', color: 'var(--color-red, #f87171)' }}>Notifications blocked — check your browser settings.</p>}
+          {notifStatus === 'unsupported' && <p className="settings-saved" style={{ padding: '0.25rem 0.75rem', color: 'var(--color-red, #f87171)' }}>Push notifications not supported on this device.</p>}
+        </div>
       </Section>
 
       {/* League info */}
