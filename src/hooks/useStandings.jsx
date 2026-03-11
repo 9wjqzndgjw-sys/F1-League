@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
-import { calcDriverScore, calcConstructorScores, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
+import { calcDriverScore, calcConstructorScores, calcPayouts, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
 
 export function useStandings() {
   const [loading, setLoading] = useState(true)
@@ -30,8 +30,8 @@ export function useStandings() {
           supabase.from('race_results').select('*'),
           supabase.from('draft_picks').select('*'),
           supabase.from('league_settings').select('*').eq('id', 1).single(),
-          supabase.from('grand_prix').select('id,name,round_number,race_date,has_sprint')
-            .eq('status', 'upcoming').order('round_number').limit(1),
+          supabase.from('grand_prix').select('id,name,round_number,race_date,has_sprint,status')
+            .in('status', ['drafting', 'upcoming']).order('round_number').limit(1),
         ])
 
         if (gpsErr) throw gpsErr
@@ -145,32 +145,21 @@ export function useStandings() {
       // Sort managers for this GP and assign payouts
       const ranked = Object.entries(mgr).sort((a, b) => b[1].total - a[1].total)
 
-      const topScore = ranked.length > 0 ? ranked[0][1].total : 0
-      const firstPlaceMids = topScore > 0
-        ? new Set(ranked.filter(([, s]) => s.total === topScore).map(([mid]) => mid))
-        : new Set()
-      const isTie = firstPlaceMids.size > 1
-      const multiplier = isTie ? 2 : 1
-      const numFirst = firstPlaceMids.size || 1
-      const secondMid = ranked.find(([mid]) => !firstPlaceMids.has(mid))?.[0]
+      const payoutResults = calcPayouts(
+        ranked.map(([id, s]) => ({ id, total: s.total })),
+        payoutFirst,
+        payoutSecond,
+      )
+      const isTie = payoutResults[0]?.isTie ?? false
 
-      // 1st owes nothing. 2nd pays to the 1st pool but not the 2nd pool.
-      // Others pay both pools.
-      const numNonFirst = N - numFirst          // pays into the 1st pool (includes 2nd)
-      const numNonPodium = Math.max(0, numNonFirst - (secondMid ? 1 : 0))  // pays into 2nd pool
-
-      const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
-      const secondReceived = payoutSecond * multiplier * numNonPodium
-
-      for (const [mid, s] of ranked) {
-        const isFirst = firstPlaceMids.has(mid)
-        const isSecond = mid === secondMid
-        s.payout = isFirst ? firstEach : isSecond ? secondReceived : 0
-        s.owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
-        s.net = s.payout - s.owed
+      for (const { id: mid, payout, owed, net } of payoutResults) {
+        const s = mgr[mid]
+        s.payout = payout
+        s.owed = owed
+        s.net = net
         season[mid].total += s.total
-        season[mid].payouts += s.payout
-        season[mid].owed += s.owed
+        season[mid].payouts += payout
+        season[mid].owed += owed
       }
 
       return {

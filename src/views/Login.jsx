@@ -27,7 +27,10 @@ export default function Login() {
       .from('managers')
       .select('id, display_name, slug')
       .order('display_name')
-      .then(({ data }) => setManagers(data ?? []))
+      .then(({ data, error: fetchError }) => {
+        if (fetchError) setError('Could not load managers. Please refresh.')
+        else setManagers(data ?? [])
+      })
   }, [])
 
   async function handleSubmit(e) {
@@ -45,6 +48,7 @@ export default function Login() {
       <div className="login-page">
         <Brand />
         <p className="login-prompt">Who are you?</p>
+        {error && <p className="login-error">{error}</p>}
         <div className="manager-grid">
           {managers.map((m) => (
             <button

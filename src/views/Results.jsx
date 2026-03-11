@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth.jsx'
-import { calcDriverScore, calcConstructorScores, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
+import { calcDriverScore, calcConstructorScores, calcPayouts, DEFAULT_CONSTRUCTOR_SCORING } from '../lib/scoring'
 
 function posLabel(r) {
   if (r.is_dsq) return 'DSQ'
@@ -313,29 +313,17 @@ export default function Results() {
       return na.localeCompare(nb)
     })
 
-    // Compute net money for each manager (mirrors useStandings logic)
-    const N = managers.length
-    const topScore = ranked.length > 0 ? ranked[0].total : 0
-    const firstMids = topScore > 0
-      ? new Set(ranked.filter(s => s.total === topScore).map(s => s.manager.id))
-      : new Set()
-    const isTie = firstMids.size > 1
-    const multiplier = isTie ? 2 : 1
-    const numFirst = firstMids.size || 1
-    const secondMid = ranked.find(s => !firstMids.has(s.manager.id))?.manager.id
-    const numNonFirst = N - numFirst
-    const numNonPodium = Math.max(0, numNonFirst - (secondMid ? 1 : 0))
-    const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
-    const secondReceived = payoutSecond * multiplier * numNonPodium
-
-    for (const [i, s] of ranked.entries()) {
-      const mid = s.manager.id
-      const isFirst = firstMids.has(mid)
-      const isSecond = mid === secondMid
-      s.rank = i + 1
-      s.payout = isFirst ? firstEach : isSecond ? secondReceived : 0
-      s.owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
-      s.net = s.payout - s.owed
+    const payoutResults = calcPayouts(
+      ranked.map((s) => ({ id: s.manager.id, total: s.total })),
+      payoutFirst,
+      payoutSecond,
+    )
+    for (const { id, rank, payout, owed, net } of payoutResults) {
+      const s = ranked.find((r) => r.manager.id === id)
+      s.rank = rank
+      s.payout = payout
+      s.owed = owed
+      s.net = net
     }
 
     return ranked

@@ -17,6 +17,31 @@ export function calcDriverScore(
   return idx >= 0 && idx < scoring.length ? scoring[idx] : 0
 }
 
+// items: [{ id, total }, ...] sorted by total descending
+// Returns [{ id, total, rank, payout, owed, net, isTie }, ...]
+export function calcPayouts(items, payoutFirst, payoutSecond) {
+  const N = items.length
+  const topScore = N > 0 ? items[0].total : 0
+  const firstIds = topScore > 0
+    ? new Set(items.filter((s) => s.total === topScore).map((s) => s.id))
+    : new Set()
+  const isTie = firstIds.size > 1
+  const multiplier = isTie ? 2 : 1
+  const numFirst = firstIds.size || 1
+  const secondId = items.find((s) => !firstIds.has(s.id))?.id
+  const numNonFirst = N - numFirst
+  const numNonPodium = Math.max(0, numNonFirst - (secondId ? 1 : 0))
+  const firstEach = numNonFirst > 0 ? payoutFirst * multiplier * numNonFirst / numFirst : 0
+  const secondReceived = payoutSecond * multiplier * numNonPodium
+  return items.map((item, i) => {
+    const isFirst = firstIds.has(item.id)
+    const isSecond = item.id === secondId
+    const payout = isFirst ? firstEach : isSecond ? secondReceived : 0
+    const owed = isFirst ? 0 : isSecond ? payoutFirst * multiplier : (payoutFirst + payoutSecond) * multiplier
+    return { ...item, rank: i + 1, payout, owed, net: payout - owed, isTie }
+  })
+}
+
 // constructors: array of constructor objects with .id
 // driverResultsByConstructor: { [constructorId]: [fantasyPoints, ...] }
 // constructorScoring: array of point values by rank (e.g. [11,10,9,...])
