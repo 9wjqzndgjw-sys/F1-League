@@ -7,11 +7,9 @@ import App from './App.jsx'
 
 inject()
 
-// Unregister any existing service workers — SW caching causes stale-build issues
+// Register service worker for push notifications and offline support
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(r => r.unregister())
-  })
+  navigator.serviceWorker.register('/sw.js').catch(() => {})
 }
 
 createRoot(document.getElementById('root')).render(

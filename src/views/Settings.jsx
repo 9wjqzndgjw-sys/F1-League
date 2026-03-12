@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { supabase } from '../lib/supabase'
+import { getSubscriptionState, subscribeToPush, unsubscribeFromPush } from '../lib/push'
 import DriverSync from '../components/DriverSync.jsx'
 import ResultSync from '../components/ResultSync.jsx'
 import QualifyingEntry from '../components/QualifyingEntry.jsx'
@@ -50,6 +51,7 @@ export default function Settings() {
 
   // Notifications
   const [notifStatus, setNotifStatus] = useState('idle') // idle | requesting | sending | sent | denied | unsupported
+  const [pushState, setPushState] = useState('loading') // loading | unsupported | denied | unsubscribed | subscribed
 
   // Commissioner editable fields
   const [draftRounds, setDraftRounds] = useState(3)
@@ -90,6 +92,32 @@ export default function Settings() {
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [user])
+
+  // Load push subscription state once manager is known
+  useEffect(() => {
+    if (!manager) return
+    getSubscriptionState(manager.id).then(setPushState)
+  }, [manager])
+
+  async function enablePush() {
+    if (!('Notification' in window)) { setPushState('unsupported'); return }
+    setPushState('requesting')
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') { setPushState('denied'); return }
+    try {
+      await subscribeToPush(manager.id)
+      setPushState('subscribed')
+    } catch {
+      setPushState('unsubscribed')
+    }
+  }
+
+  async function disablePush() {
+    try {
+      await unsubscribeFromPush(manager.id)
+    } catch { /* ignore */ }
+    setPushState('unsubscribed')
+  }
 
   async function sendTestNotification() {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
@@ -232,7 +260,23 @@ export default function Settings() {
       <Section title="Notifications">
         <div className="settings-card">
           <div className="settings-info-row">
-            <span className="info-label">Test push notification</span>
+            <span className="info-label">Pick alerts</span>
+            {pushState === 'loading' && <span className="info-value">…</span>}
+            {pushState === 'subscribed' && (
+              <button className="settings-save-btn" onClick={disablePush}>Disable</button>
+            )}
+            {(pushState === 'unsubscribed') && (
+              <button className="settings-save-btn" onClick={enablePush}>Enable</button>
+            )}
+            {pushState === 'requesting' && (
+              <button className="settings-save-btn" disabled>Requesting…</button>
+            )}
+            {pushState === 'unsupported' && <span className="info-value" style={{ color: 'var(--color-red, #f87171)' }}>Not supported</span>}
+            {pushState === 'denied' && <span className="info-value" style={{ color: 'var(--color-red, #f87171)' }}>Blocked in browser</span>}
+          </div>
+          {pushState === 'subscribed' && <p className="settings-saved" style={{ padding: '0.25rem 0.75rem' }}>You'll get notified when someone makes a pick.</p>}
+          <div className="settings-info-row" style={{ marginTop: '0.5rem' }}>
+            <span className="info-label">Test notification</span>
             <button
               className="settings-save-btn"
               onClick={sendTestNotification}

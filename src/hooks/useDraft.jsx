@@ -151,6 +151,8 @@ export function useDraft() {
           if (prev.some((p) => p.id === data.id)) return prev
           return [...prev, data].sort((a, b) => a.pick_number - b.pick_number)
         })
+        // Fire-and-forget: notify other managers
+        supabase.functions.invoke('send-push', { body: { pick: data } }).catch(() => {})
       }
       return { error }
     },
