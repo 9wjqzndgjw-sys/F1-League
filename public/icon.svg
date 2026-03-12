@@ -8,7 +8,7 @@
     </filter>
   </defs>
   <rect width="512" height="512" rx="112" fill="#000000"/>
-  <!-- F1 — tilted, shadowed -->
+  <!-- F1 — shadowed -->
   <text
     x="256" y="308"
     font-family="Arial Black, Arial, sans-serif"
@@ -18,12 +18,11 @@
     text-anchor="middle"
     dominant-baseline="auto"
     letter-spacing="-10"
-    transform="rotate(-5, 256, 200)"
     filter="url(#f1shadow)"
   >F1</text>
-  <!-- Fantasy 26 — tilted, shadowed -->
+  <!-- Fantasy 26 — shadowed -->
   <text
-    x="256" y="415"
+    x="256" y="400"
     font-family="Arial Black, Arial, sans-serif"
     font-weight="700"
     font-size="60"
@@ -31,7 +30,6 @@
     text-anchor="middle"
     dominant-baseline="auto"
     letter-spacing="2"
-    transform="rotate(-5, 256, 380)"
     filter="url(#subshadow)"
   >FANTASY 26</text>
 </svg>
