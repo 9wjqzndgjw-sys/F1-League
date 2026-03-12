@@ -1,24 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#0a0a0b"/>
-  <!-- Checkered accent strip -->
-  <rect x="0" y="360" width="64" height="64" rx="0" fill="#e10600"/>
-  <rect x="64" y="360" width="64" height="64" fill="#0a0a0b"/>
-  <rect x="128" y="360" width="64" height="64" fill="#e10600"/>
-  <rect x="192" y="360" width="64" height="64" fill="#0a0a0b"/>
-  <rect x="256" y="360" width="64" height="64" fill="#e10600"/>
-  <rect x="320" y="360" width="64" height="64" fill="#0a0a0b"/>
-  <rect x="384" y="360" width="64" height="64" fill="#e10600"/>
-  <rect x="448" y="360" width="64" height="64" fill="#0a0a0b"/>
-  <rect x="0" y="424" width="64" height="88" fill="#0a0a0b"/>
-  <rect x="64" y="424" width="64" height="88" fill="#e10600"/>
-  <rect x="128" y="424" width="64" height="88" fill="#0a0a0b"/>
-  <rect x="192" y="424" width="64" height="88" fill="#e10600"/>
-  <rect x="256" y="424" width="64" height="88" fill="#0a0a0b"/>
-  <rect x="320" y="424" width="64" height="88" fill="#e10600"/>
-  <rect x="384" y="424" width="64" height="88" fill="#0a0a0b"/>
-  <rect x="448" y="424" width="64" height="88" fill="#e10600"/>
-  <!-- F1 text -->
-  <text x="256" y="320" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="220" fill="white" text-anchor="middle" dominant-baseline="auto" letter-spacing="-8">F1</text>
-  <!-- Red accent line under text -->
-  <rect x="80" y="330" width="352" height="14" rx="7" fill="#e10600"/>
+  <rect width="512" height="512" rx="112" fill="#000000"/>
+  <!-- F1 -->
+  <text x="256" y="310" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="260" fill="#e10600" text-anchor="middle" dominant-baseline="auto" letter-spacing="-10">F1</text>
+  <!-- Fantasy 26 -->
+  <text x="256" y="390" font-family="Arial Black, Arial, sans-serif" font-weight="700" font-size="82" fill="#ffffff" text-anchor="middle" dominant-baseline="auto" letter-spacing="6">FANTASY 26</text>
 </svg>
