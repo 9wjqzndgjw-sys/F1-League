@@ -1,3 +1,30 @@
+// Push: show whatever the server sends, or a default message
+self.addEventListener('push', event => {
+  let data = { title: 'F1 Fantasy', body: 'Something happened in your league.' }
+  if (event.data) {
+    try { data = { ...data, ...event.data.json() } } catch { /* non-JSON payload */ }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+    })
+  )
+})
+
+// Notification click: focus or open the app
+self.addEventListener('notificationclick', event => {
+  event.notification.close()
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      const existing = clients.find(c => c.url.startsWith(self.location.origin))
+      if (existing) return existing.focus()
+      return self.clients.openWindow('/')
+    })
+  )
+})
+
 const CACHE = 'f1-fantasy-__BUILD_ID__'
 
 const PRECACHE = [
